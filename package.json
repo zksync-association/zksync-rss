@@ -1,0 +1,36 @@
+{
+  "name": "zksync-rss",
+  "version": "0.0.1",
+  "description": "An RSS feed for zksync's governance events",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+     "start": "ts-node-dev --loader ts-node/esm --respawn --transpile-only index.ts"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "ethers": "^6.11.1",
+    "ts-node": "^10.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ScopeLift/zksync-rss.git"
+  },
+  "keywords": [
+    "RSS",
+    "Blockchain",
+    "Monitor"
+  ],
+  "author": "Sero - Scopelift",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ScopeLift/zksync-rss/issues"
+  },
+  "homepage": "https://github.com/ScopeLift/zksync-rss#readme"
+}
