@@ -42,6 +42,7 @@ export const monitorEventsAtBlock = async (
               decodedData
             };
           }))
+          
           .catch((error: unknown) => {
             const err = error as { code?: string; argument?: string };
             if (err.code === 'INVALID_ARGUMENT' && err.argument === 'address') {
@@ -73,8 +74,6 @@ export const monitorEventsAtBlock = async (
       }
     });
 
-    // Now processedEvents contains all your event data in a flat array
-    // You can organize it however you want, here's an example:
     const organizedEvents = processedEvents.reduce((acc: any, event) => {
       // Group by event name
       if (!acc[event.eventName]) {
