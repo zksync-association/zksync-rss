@@ -1,50 +1,35 @@
 import { ethers } from "ethers";
-import { EventsMapping, UnifiedMinimalABI, ContractAddresses } from "./constants"
+import { EventsMapping } from "./constants";
+import { monitorEventsAtBlock } from "./monitor/getEventsAtBlock";
 
-
-const zkSyncProvider = ethers.getDefaultProvider('https://zksync-mainnet.g.alchemy.com/v2/oo31x_W2PF8koBxWmkuxGq6aj7egkHDH');
-
-const ethereumProvider = ethers.getDefaultProvider('https://eth-mainnet.g.alchemy.com/v2/oo31x_W2PF8koBxWmkuxGq6aj7egkHDH');
-
+const zkSyncProvider = ethers.getDefaultProvider('https://mainnet.era.zksync.io');
+const ethereumProvider = ethers.getDefaultProvider('https://eth-pokt.nodies.app');
 
 // In-memory array to store detected events
 const eventLog: Array<{ network: string, address: string, event: any }> = [];
 
-// Function to initialize contract instances with specific event listeners
-const initializeContracts = (
-  provider: ethers.Provider,
-  networkName: string,
-  contractsConfig: { [address: string]: string[] }
-) => {
-  const contracts: { [address: string]: ethers.Contract } = {};
-  for (const [address, events] of Object.entries(contractsConfig)) {
-    const contract = new ethers.Contract(address, UnifiedMinimalABI, provider);
-
-    // Add listeners only for the specified events
-    events.forEach(eventName => {
-      try {
-        contract.on(eventName, (...args) => {
-          const event = args[args.length - 1]; // Last argument is the event object
-          console.log(`New ${eventName} event detected on ${networkName} - Contract: ${address}`);
-          eventLog.push({ network: networkName, address, event });
-          console.log(eventLog);
-        });
-      } catch (e) {
-        console.log(e);
-      }
-      
-    });
-
-    contracts[address] = contract;
-  }
-  return contracts;
-};
-
-// Function to monitor all networks (already set up by `initializeContracts`)
 const monitorAllNetworks = async () => {
-  console.log("Monitoring specified events for Ethereum Mainnet and ZKSync Network...");
-  initializeContracts(zkSyncProvider, "ZKsync Network", EventsMapping["ZKsync Network"]);
-  initializeContracts(ethereumProvider, "Ethereum Mainnet", EventsMapping["Ethereum Mainnet"]);
+  let lastBlockEth = await ethereumProvider.getBlockNumber();
+  let lastBlockZKSync = await zkSyncProvider.getBlockNumber();
+
+  // Polling function to check for new blocks
+  const checkForNewBlocks = async () => {
+    const currentBlockEth = await ethereumProvider.getBlockNumber();
+    const currentBlockZKSync = await zkSyncProvider.getBlockNumber();
+
+    if (currentBlockEth > lastBlockEth) {
+      lastBlockEth = currentBlockEth;
+      await monitorEventsAtBlock(currentBlockEth, ethereumProvider, EventsMapping["Ethereum Mainnet"]);
+    }
+
+    if (currentBlockZKSync > lastBlockZKSync) {
+      lastBlockZKSync = currentBlockZKSync;
+      await monitorEventsAtBlock(currentBlockZKSync, zkSyncProvider, EventsMapping["ZKsync Network"]);
+    }
+  };
+
+  // Set an interval to check for new blocks for ZKSync every second
+  setInterval(checkForNewBlocks, 1000); // Check ZKSync every second (ZK adds blocks once a second, ethereum 15s intervals, scan completes in 75ms on ethereum and 350ms on zk)
 };
 
 // Start monitoring
