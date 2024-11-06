@@ -1,0 +1,24 @@
+[
+  {
+    "title": "ProposalThresholdSet - ZKSync Governance",
+    "description": "\n          <strong>Network:</strong> ZKSync Era<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41196850<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> ProposalThresholdSet<br />\n          \n          <pre>{\n  \"oldProposalThreshold\": \"0\",\n  \"newProposalThreshold\": \"21000000000000000000000000\"\n}</pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xf34b3d24f9f5d784e7c83685706f7cccee4ad8255de16104bed649eec0946fa9",
+    "guid": "0x20dfcf19a97efca448c1ed5301a98ed5d967aa705daffb2b3de17aae7b2b26fa",
+    "categories": [
+      "ProposalThresholdSet"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-06T14:58:19.272Z"
+  },
+  {
+    "title": "LateQuorumVoteExtensionSet - ZKSync Governance",
+    "description": "\n          <strong>Network:</strong> ZKSync Era<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41196850<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> LateQuorumVoteExtensionSet<br />\n          \n          <pre>{\n  \"oldVoteExtension\": \"0\",\n  \"newVoteExtension\": \"604800\"\n}</pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xf34b3d24f9f5d784e7c83685706f7cccee4ad8255de16104bed649eec0946fa9",
+    "guid": "0x116d9cc33f991a54115fe0bc3a223d284c065071e32ca47fec1ac75afd387add",
+    "categories": [
+      "LateQuorumVoteExtensionSet"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-06T14:58:19.275Z"
+  }
+]
