@@ -1,9 +1,11 @@
 import { ethers } from "ethers";
-import { EventsMapping } from "./constants";
-import { monitorEventsAtBlock } from "./monitor/getEventsAtBlock";
+import { EventsMapping } from "~/constants";
+import { monitorEventsAtBlock } from "~/monitor/getEventsAtBlock";
+import dotenv from 'dotenv';
+dotenv.config();
 
-const zkSyncProvider = ethers.getDefaultProvider('https://mainnet.era.zksync.io');
-const ethereumProvider = ethers.getDefaultProvider('https://eth-pokt.nodies.app');
+const zkSyncProvider = ethers.getDefaultProvider(process.env.ZKSYNC_RPC_PROVIDER_URL || 'https://mainnet.era.zksync.io');
+const ethereumProvider = ethers.getDefaultProvider(process.env.ETH_MAINNET_RPC_PROVIDER_URL || 'https://eth-pokt.nodies.app');
 
 const monitorAllNetworks = async () => {
   let lastBlockEth = await ethereumProvider.getBlockNumber();

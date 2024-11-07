@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],  // if your code is in a src directory
+      "~/*": ["./*"]     // for root-level imports
+    },
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
