@@ -1,14 +1,19 @@
 import { ethers } from "ethers";
-import { EventsMapping } from "./constants";
-import { monitorEventsAtBlock } from "./monitor/getEventsAtBlock";
+import dotenv from 'dotenv';
 import express from "express";
-import { feed, addEventToRSS } from "./rss/rss";
 import { spawn } from 'child_process';
+
+import { EventsMapping } from "~/constants";
+import { monitorEventsAtBlock } from "~/monitor/getEventsAtBlock";
+import { feed, addEventToRSS } from "~/rss/rss";
 
 const RESTART_DELAY = 5000; // 5 seconds
 
-const zkSyncProvider = ethers.getDefaultProvider('https://mainnet.era.zksync.io');
-const ethereumProvider = ethers.getDefaultProvider('https://eth-pokt.nodies.app');
+dotenv.config();
+
+
+const zkSyncProvider = ethers.getDefaultProvider(process.env.ZKSYNC_RPC_PROVIDER_URL || 'https://mainnet.era.zksync.io');
+const ethereumProvider = ethers.getDefaultProvider(process.env.ETH_MAINNET_RPC_PROVIDER_URL || 'https://eth-pokt.nodies.app');
 
 const serializeEventArgs = (args: any) => {
   return JSON.stringify(args, (_, value) =>

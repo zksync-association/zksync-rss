@@ -179,25 +179,6 @@ export const  UnifiedMinimalABI = [
         "name": "ChangeEmergencyUpgradeBoard",
         "type": "event"
     },
-    // {
-    //     "anonymous": false,
-    //     "inputs": [
-    //         {
-    //             "indexed": true,
-    //             "internalType": "bytes32",
-    //             "name": "_id",
-    //             "type": "bytes32"
-    //         },
-    //         {
-    //             "indexed": false,
-    //             "internalType": "UpgradeProposal",
-    //             "name": "_proposal",
-    //             "type": "UpgradeProposal"
-    //         }
-    //     ],
-    //     "name": "UpgradeStarted",
-    //     "type": "event"
-    // },
     {
         "anonymous": false,
         "inputs": [
