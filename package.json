@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node-dev --loader ts-node/esm --respawn --transpile-only index.ts"
+    "start": "ts-node-dev -r tsconfig-paths/register --loader ts-node/esm --respawn --transpile-only index.ts"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/rss": "^0.0.32",
     "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.4.2"
   },
   "dependencies": {

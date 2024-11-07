@@ -68,24 +68,25 @@ const saveFeedToFile = () => {
 };
 
 // Function to format and add an event as an RSS item
-export const addEventToRSS = (event: any, networkName: string, chainID: number, block: number, govBody: string, proposalLink: string | null) => {
-  const title = `${event.eventName} - ${govBody}`;
-  const guid = createUniqueID(title + event.description);
+export const addEventToRSS = (address: string, eventName: string, topics: string[], title: string, description: string, link: string, networkName: string, chainID: number, block: number, govBody: string, proposalLink: string | null) => {
+
+  const guid = createUniqueID(title + description);
 
   const newItem: RSS.ItemOptions = {
       title,
-      url: event.link,
+      url: link,
       description: `
           <strong>Network:</strong> ${networkName}<br />
+          <strong>Address:</strong> ${address}<br />
           <strong>Chain ID:</strong> ${chainID}<br />
           <strong>Block:</strong> ${block}<br />
           <strong>Governance Body:</strong> ${govBody}<br />
-          <strong>Event Type:</strong> ${event.eventName}<br />
+          <strong>Event Type:</strong> ${eventName}<br />
           ${proposalLink ? `<strong>Proposal Link:</strong> <a href="${proposalLink}">${proposalLink}</a><br />` : ""}
-          <pre>${event.description}</pre>
+          <pre>${description}</pre>
       `,
       author: govBody,
-      categories: [event.eventName],
+      categories: topics,
       date: new Date(),
       guid,
   };
