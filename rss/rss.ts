@@ -28,7 +28,7 @@ const feedOptions: RSS.FeedOptions = {
 // Load existing feed items if they exist
 const loadExistingFeed = (): RSS => {
   ensureDirectoryExists(RSS_FILE_PATH);
-  let feed = new RSS(feedOptions);
+  const feed = new RSS(feedOptions);
   
   if (fs.existsSync(RSS_FILE_PATH)) {
     try {
