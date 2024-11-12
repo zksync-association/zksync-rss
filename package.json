@@ -16,7 +16,6 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
-    "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
     "ethers": "^6.11.1",
     "express": "^4.21.1",

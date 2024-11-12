@@ -29,7 +29,7 @@ const ethereumConfig: NetworkConfig = {
 const zkSyncConfig: NetworkConfig = {
   provider: zkSyncProvider,
   eventsMapping: EventsMapping["ZKsync Network"],
-  networkName: "ZKSync Era",
+  networkName: "ZKSync",
   chainId: 324,
   blockExplorerUrl: "https://explorer.zksync.io",
   governanceName: "ZKSync Governance",
@@ -40,7 +40,7 @@ const zkSyncConfig: NetworkConfig = {
 const startServerWithRestart = () => {
   const startServer = () => {
     const app = express();
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.PORT || 3001;
 
     // Endpoint to serve the RSS feed
     app.get('/rss', (req, res) => {
@@ -100,7 +100,7 @@ const startServerWithRestart = () => {
       try {
         await Promise.all([
           //processBlockRange(ethereumConfig, 20486023), // Replace with your desired start block
-          processBlockRange(zkSyncConfig, 47685894)    // Replace with your desired start block
+          processBlockRange(zkSyncConfig, 44628810)    // Replace with your desired start block
         ]);
         console.log('Finished processing all block ranges');
       } catch (error) {

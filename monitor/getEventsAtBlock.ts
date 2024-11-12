@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { getGovBodyFromAddress, UnifiedMinimalABI } from "~/constants";
+import { getGovBodyFromAddress, UnifiedMinimalABI, EventsMapping } from "~/constants";
 import { ParsedEvent } from "./interfaces";
 
 function getCategory(eventName: string): string {
@@ -107,8 +107,10 @@ export const monitorEventsAtBlock = async (
               
               // Construct the RSS feed item
               acc[event.eventName].push({
-                title: `${event.eventName} - ${event.eventName} - ${getGovBodyFromAddress(event.address)}`,
-                link: `https://explorer.zksync.io/tx/${event.txhash}`,
+                title: `${event.eventName} - ${getGovBodyFromAddress(event.address)}`,
+                link: event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 
+                  `https://etherscan.io/tx/${event.txhash}` :
+                  `https://explorer.zksync.io/tx/${event.txhash}`,
                 txhash: event.txhash,
                 eventName: event.eventName,
                 blocknumber: event.blocknumber,
@@ -119,8 +121,8 @@ export const monitorEventsAtBlock = async (
                 decodedData: event.decodedData,
                 description: `
                   <![CDATA[
-                    <strong>Network:</strong> ZKsync Era<br />
-                    <strong>Chain ID:</strong> 324<br />
+                    <strong>Network:</strong> ${event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 'Ethereum Mainnet' : 'ZKsync Era'}<br />
+                    <strong>Chain ID:</strong> ${event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? '1' : '324'}<br />
                     <strong>Block:</strong> ${event.blocknumber}<br />
                     <strong>Governance Body:</strong> ${getGovBodyFromAddress(event.address) || 'Guardians'}<br />
                     <strong>Event Type:</strong> ${event.eventName}<br />
