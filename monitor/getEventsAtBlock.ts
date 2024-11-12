@@ -1,17 +1,31 @@
 import { ethers } from "ethers";
-import { UnifiedMinimalABI } from "~/constants";
+import { getGovBodyFromAddress, UnifiedMinimalABI, EventsMapping } from "~/constants";
+import { ParsedEvent } from "./interfaces";
 
-interface ParsedEvent {
-  eventName: string;
-  txhash: string;
-  blocknumber: number;
-  address: string;
-  topics: string[];
-  interface: ethers.EventFragment;
-  args: Record<string, unknown>;
-  rawData: string;
-  decodedData: Record<string, unknown>;
+function getCategory(eventName: string): string {
+  if (!eventName) return "Unknown";
+
+  // Define mappings of keywords to categories
+  const categories = {
+    "Protocol": ["Proposal Submitted", "Vote Delay", "Voting Period", "Met Quorum", "Vote Period Expiring", "Queued", "Executed", "Vetoed"],
+    "Token": ["Token Assembly", "Increase Staking Rewards"],
+    "GovOps": ["Governance", "Security Council", "Token Assembly"],
+    "Emergency Upgrade": ["Emergency Upgrade", "Upgrade Board"],
+    "Freeze": ["Soft Freeze", "Hard Freeze"],
+    "Message": ["LateQuorumVoteExtensionSet", "Message"]
+  };
+
+  // Search for matching keywords in the event name
+  for (const [category, keywords] of Object.entries(categories)) {
+    if (keywords.some(keyword => eventName.includes(keyword))) {
+      return category;
+    }
+  }
+
+  // Default category if no match is found
+  return "Other";
 }
+
 
 export const monitorEventsAtBlock = async (
   blocknumber: number,
@@ -84,21 +98,47 @@ export const monitorEventsAtBlock = async (
         result.value.forEach(eventResult => {
           if (eventResult.status === 'fulfilled') {
             eventResult.value?.forEach(event => {
+              console.log(event, 'here', event?.interface.inputs);
               if (!event) return;
-              
+    
               if (!acc[event.eventName]) {
                 acc[event.eventName] = [] as ParsedEvent[];
               }
+              
+              // Construct the RSS feed item
               acc[event.eventName].push({
-                eventName: event.eventName,
+                title: `${event.eventName} - ${getGovBodyFromAddress(event.address)}`,
+                link: event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 
+                  `https://etherscan.io/tx/${event.txhash}` :
+                  `https://explorer.zksync.io/tx/${event.txhash}`,
                 txhash: event.txhash,
+                eventName: event.eventName,
                 blocknumber: event.blocknumber,
                 address: event.address,
-                topics: [...event.topics], // Convert readonly array to mutable array
                 interface: event.interface,
                 args: event.args,
                 rawData: event.rawData,
-                decodedData: event.decodedData
+                decodedData: event.decodedData,
+                description: `
+                  <![CDATA[
+                    <strong>Network:</strong> ${event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 'Ethereum Mainnet' : 'ZKsync Era'}<br />
+                    <strong>Chain ID:</strong> ${event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? '1' : '324'}<br />
+                    <strong>Block:</strong> ${event.blocknumber}<br />
+                    <strong>Governance Body:</strong> ${getGovBodyFromAddress(event.address) || 'Guardians'}<br />
+                    <strong>Event Type:</strong> ${event.eventName}<br />
+                    <strong>Address:</strong> ${event.address}<br />
+                    <strong>Event:</strong> ${event.eventName}<br />
+                    <pre>${JSON.stringify(event.args, (_, value) =>
+                      typeof value === 'bigint' ? value.toString() : value
+                    , 2)}
+                    </pre>
+                  ]]>
+                `,
+                topics: [getCategory(event.eventName)],
+                timestamp: new Date().toISOString(),
+                proposalLink: event.args.proposalId ? JSON.stringify(event.args.proposalId, (_, value) =>
+                  typeof value === 'bigint' ? value.toString() : value
+                , 2) : '',
               });
             });
           }
@@ -106,7 +146,6 @@ export const monitorEventsAtBlock = async (
       }
       return acc;
     }, {});
-    
     console.log('Organized Events:', organizedEvents);
     return organizedEvents;
   } catch (e) {
