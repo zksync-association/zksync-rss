@@ -43,7 +43,7 @@ export const EventsMapping = {
         "ProposalCanceled",
         "ProposalCreated",
     ],
-    "0x3E21c654B545Bf6236DC08236169DcF13dA4Ddd6": [
+    "0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6": [
         "RoleAdminChanged",
         "RoleGranted",
         "RoleRevoked",

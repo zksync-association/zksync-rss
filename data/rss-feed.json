@@ -416,5 +416,148 @@
     ],
     "author": "ZKSync Governance",
     "date": "2024-11-07T12:42:40.550Z"
+  },
+  {
+    "title": "QuorumUpdated - ZkTokenGovernor",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197311<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> QuorumUpdated<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197311<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor<br />\n                    <strong>Event Type:</strong> QuorumUpdated<br />\n                    <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n                    <strong>Event:</strong> QuorumUpdated<br />\n                    <pre>{\n  \"oldQuorum\": \"0\",\n  \"newQuorum\": \"630000000000000000000000000\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xe0586a7d8fb8ce63a042b738e79d45906d6f532bbf428e1cfcf0ac28290a5635",
+    "guid": "0x25be44ec5c9d5f80c34d99b440619eb9ddfd1eac5e083df50ffc32f316c91851",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:13:23.199Z"
+  },
+  {
+    "title": "IsProposeGuardedToggled - ZkTokenGovernor",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197311<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> IsProposeGuardedToggled<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197311<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor<br />\n                    <strong>Event Type:</strong> IsProposeGuardedToggled<br />\n                    <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n                    <strong>Event:</strong> IsProposeGuardedToggled<br />\n                    <pre>{\n  \"oldState\": false,\n  \"newState\": false\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xe0586a7d8fb8ce63a042b738e79d45906d6f532bbf428e1cfcf0ac28290a5635",
+    "guid": "0x9baacaf02a3e2d84ec17f0e31234697638ea14038904031e5a2bc5a25978c0e3",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:13:23.200Z"
+  },
+  {
+    "title": "ProposalThresholdSet - ZkTokenGovernor",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197311<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> ProposalThresholdSet<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197311<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor<br />\n                    <strong>Event Type:</strong> ProposalThresholdSet<br />\n                    <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n                    <strong>Event:</strong> ProposalThresholdSet<br />\n                    <pre>{\n  \"oldProposalThreshold\": \"0\",\n  \"newProposalThreshold\": \"21000000000000000000000000\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xe0586a7d8fb8ce63a042b738e79d45906d6f532bbf428e1cfcf0ac28290a5635",
+    "guid": "0x8db6ce7b76245db6f7d2a980086ed610aa2aafa7185932843a4082edb13d6193",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:13:23.200Z"
+  },
+  {
+    "title": "VotingPeriodSet - ZkTokenGovernor",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197311<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> VotingPeriodSet<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197311<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor<br />\n                    <strong>Event Type:</strong> VotingPeriodSet<br />\n                    <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n                    <strong>Event:</strong> VotingPeriodSet<br />\n                    <pre>{\n  \"oldVotingPeriod\": \"0\",\n  \"newVotingPeriod\": \"604800\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xe0586a7d8fb8ce63a042b738e79d45906d6f532bbf428e1cfcf0ac28290a5635",
+    "guid": "0xc5b983f0cb5139ead83e00c38e1abf2b3032e924df718ee3babdcd8510995fe3",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:13:23.200Z"
+  },
+  {
+    "title": "VotingDelaySet - ZkTokenGovernor",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197311<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> VotingDelaySet<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197311<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor<br />\n                    <strong>Event Type:</strong> VotingDelaySet<br />\n                    <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n                    <strong>Event:</strong> VotingDelaySet<br />\n                    <pre>{\n  \"oldVotingDelay\": \"0\",\n  \"newVotingDelay\": \"604800\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xe0586a7d8fb8ce63a042b738e79d45906d6f532bbf428e1cfcf0ac28290a5635",
+    "guid": "0x5a1930cb496ed0bb732c6955e0d75713faec5ec453e49dcb74e51c186c219e35",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:13:23.201Z"
+  },
+  {
+    "title": "LateQuorumVoteExtensionSet - ZkTokenGovernor",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197311<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> LateQuorumVoteExtensionSet<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197311<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor<br />\n                    <strong>Event Type:</strong> LateQuorumVoteExtensionSet<br />\n                    <strong>Address:</strong> 0x10560f8B7eE37571AD7E3702EEb12Bc422036E89<br />\n                    <strong>Event:</strong> LateQuorumVoteExtensionSet<br />\n                    <pre>{\n  \"oldVoteExtension\": \"0\",\n  \"newVoteExtension\": \"604800\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xe0586a7d8fb8ce63a042b738e79d45906d6f532bbf428e1cfcf0ac28290a5635",
+    "guid": "0x936fb49b7c59f751c15418732322c6295ae2a9eedb1a0926c58e4d18f0a16a2b",
+    "categories": [
+      "Message"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:13:23.201Z"
+  },
+  {
+    "title": "RoleAdminChanged - ZkTokenGovernor Timelock",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197308<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> RoleAdminChanged<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197308<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor Timelock<br />\n                    <strong>Event Type:</strong> RoleAdminChanged<br />\n                    <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n                    <strong>Event:</strong> RoleAdminChanged<br />\n                    <pre>{\n  \"role\": \"0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5\",\n  \"previousAdminRole\": \"0x0000000000000000000000000000000000000000000000000000000000000000\",\n  \"newAdminRole\": \"0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xa34797d73bb93e13b6a9faef4693a4cf58095a3fdd841c46501762a1ebe537ca",
+    "guid": "0xd9b3be318daf46d4ec7798a13c741229735aebba29bcc1b72773eb1cd48ddfab",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:17:32.454Z"
+  },
+  {
+    "title": "RoleAdminChanged - ZkTokenGovernor Timelock",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197308<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> RoleAdminChanged<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197308<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor Timelock<br />\n                    <strong>Event Type:</strong> RoleAdminChanged<br />\n                    <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n                    <strong>Event:</strong> RoleAdminChanged<br />\n                    <pre>{\n  \"role\": \"0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1\",\n  \"previousAdminRole\": \"0x0000000000000000000000000000000000000000000000000000000000000000\",\n  \"newAdminRole\": \"0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xa34797d73bb93e13b6a9faef4693a4cf58095a3fdd841c46501762a1ebe537ca",
+    "guid": "0x2d291f30c01375b8703ee4a49258bf770a86c7bf35208e461de5a89138e75068",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:17:32.455Z"
+  },
+  {
+    "title": "RoleAdminChanged - ZkTokenGovernor Timelock",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197308<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> RoleAdminChanged<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197308<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor Timelock<br />\n                    <strong>Event Type:</strong> RoleAdminChanged<br />\n                    <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n                    <strong>Event:</strong> RoleAdminChanged<br />\n                    <pre>{\n  \"role\": \"0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63\",\n  \"previousAdminRole\": \"0x0000000000000000000000000000000000000000000000000000000000000000\",\n  \"newAdminRole\": \"0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xa34797d73bb93e13b6a9faef4693a4cf58095a3fdd841c46501762a1ebe537ca",
+    "guid": "0x5605d6c38d5b0793556e37c5c009f34779d483afdd16403ce05fa6315381cdda",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:17:32.455Z"
+  },
+  {
+    "title": "RoleAdminChanged - ZkTokenGovernor Timelock",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197308<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> RoleAdminChanged<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197308<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor Timelock<br />\n                    <strong>Event Type:</strong> RoleAdminChanged<br />\n                    <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n                    <strong>Event:</strong> RoleAdminChanged<br />\n                    <pre>{\n  \"role\": \"0xfd643c72710c63c0180259aba6b2d05451e3591a24e58b62239378085726f783\",\n  \"previousAdminRole\": \"0x0000000000000000000000000000000000000000000000000000000000000000\",\n  \"newAdminRole\": \"0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xa34797d73bb93e13b6a9faef4693a4cf58095a3fdd841c46501762a1ebe537ca",
+    "guid": "0x9222e820b72bcaebff7f81be90e42e4e95bc6ab964d3be1803c8f33a0c754ac4",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:17:32.456Z"
+  },
+  {
+    "title": "RoleGranted - ZkTokenGovernor Timelock",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197308<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> RoleGranted<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197308<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor Timelock<br />\n                    <strong>Event Type:</strong> RoleGranted<br />\n                    <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n                    <strong>Event:</strong> RoleGranted<br />\n                    <pre>{\n  \"role\": \"0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5\",\n  \"account\": \"0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6\",\n  \"sender\": \"0x478A1eBE665396ce0F2F87aB0F057aC273451B92\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xa34797d73bb93e13b6a9faef4693a4cf58095a3fdd841c46501762a1ebe537ca",
+    "guid": "0x238d57275ccccb04b9e268e226b133ed56bd72ee8470dfcbd1fe3996e9bb6389",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:17:32.457Z"
+  },
+  {
+    "title": "RoleGranted - ZkTokenGovernor Timelock",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197308<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> RoleGranted<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197308<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor Timelock<br />\n                    <strong>Event Type:</strong> RoleGranted<br />\n                    <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n                    <strong>Event:</strong> RoleGranted<br />\n                    <pre>{\n  \"role\": \"0x5f58e3a2316349923ce3780f8d587db2d72378aed66a8261c916544fa6846ca5\",\n  \"account\": \"0x478A1eBE665396ce0F2F87aB0F057aC273451B92\",\n  \"sender\": \"0x478A1eBE665396ce0F2F87aB0F057aC273451B92\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xa34797d73bb93e13b6a9faef4693a4cf58095a3fdd841c46501762a1ebe537ca",
+    "guid": "0x9ce0bf3c1242edd098b7ad128f4fe9563a5f64daa47a8c7ae5e0633cf0c8051f",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:17:32.457Z"
+  },
+  {
+    "title": "MinDelayChange - ZkTokenGovernor Timelock",
+    "description": "\n          <strong>Network:</strong> ZKSync<br />\n          <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n          <strong>Chain ID:</strong> 324<br />\n          <strong>Block:</strong> 41197308<br />\n          <strong>Governance Body:</strong> ZKSync Governance<br />\n          <strong>Event Type:</strong> MinDelayChange<br />\n          \n          <pre>\n                  <![CDATA[\n                    <strong>Network:</strong> ZKsync Era<br />\n                    <strong>Chain ID:</strong> 324<br />\n                    <strong>Block:</strong> 41197308<br />\n                    <strong>Governance Body:</strong> ZkTokenGovernor Timelock<br />\n                    <strong>Event Type:</strong> MinDelayChange<br />\n                    <strong>Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6<br />\n                    <strong>Event:</strong> MinDelayChange<br />\n                    <pre>{\n  \"oldDuration\": \"0\",\n  \"newDuration\": \"259200\"\n}\n                    </pre>\n                  ]]>\n                </pre>\n      ",
+    "url": "https://explorer.zksync.io/tx/0xa34797d73bb93e13b6a9faef4693a4cf58095a3fdd841c46501762a1ebe537ca",
+    "guid": "0x4d22b32243d44e776f2d01e85d821bee2686431c827d6009579e230534319de3",
+    "categories": [
+      "Other"
+    ],
+    "author": "ZKSync Governance",
+    "date": "2024-11-12T06:17:32.457Z"
   }
 ]

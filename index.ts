@@ -7,7 +7,6 @@ import { monitorNetwork } from "./monitor/monitorNetwork";
 import { NetworkConfig } from "~/monitor/interfaces";
 import { EventsMapping } from "~/constants";
 import { feed } from "~/rss/rss";
-import { processBlockRange } from "./monitor/processBlockRange";
 
 const RESTART_DELAY = 5000; // 5 seconds
 
@@ -49,29 +48,6 @@ const startServerWithRestart = () => {
       res.send(rssXML);
     });
 
-    // Endpoint to process one block
-    app.get('/processBlock', async (req, res) => {
-      const { network, blockNumber } = req.query;
-      if (!blockNumber) {
-        return res.status(400).json({ error: 'Block number is required' });
-      }
-
-      try {
-        const config = network === 'ethereum' ? ethereumConfig : 
-              network === 'zksync' ? zkSyncConfig : null;
-        
-        if (!config) {
-          return res.status(400).json({ error: 'Invalid network specified' });
-        }
-
-        await monitorNetwork(config, Number(blockNumber));
-        res.status(200).json({ success: true });
-      } catch (error) {
-        console.error('Process block error:', error);
-        res.status(500).json({ error: 'Failed to process block' });
-      }
-    });
-
     // Add health check endpoint
     app.get('/health', (req, res) => {
       res.status(200).json({ status: 'healthy' });
@@ -86,27 +62,16 @@ const startServerWithRestart = () => {
     // Start the server and then begin monitoring
     const server = app.listen(PORT, async () => {
       console.log(`Server is running on http://localhost:${PORT}`);
-      //await Promise.all([
-        // monitorNetwork(ethereumConfig).catch(error => {
-        //   console.error('ethereum monitoring error:', error);
-        //   process.exit(1);
-        // });
-        // monitorNetwork(zkSyncConfig).catch(error => {
-        //   console.error('zksync monitoring error:', error);
-        //   process.exit(1);
-        // });  
-      //])
-    
-      try {
-        await Promise.all([
-          //processBlockRange(ethereumConfig, 20486023), // Replace with your desired start block
-          processBlockRange(zkSyncConfig, 44628810)    // Replace with your desired start block
-        ]);
-        console.log('Finished processing all block ranges');
-      } catch (error) {
-        console.error('Error processing block ranges:', error);
-        process.exit(1);
-      }
+      await Promise.all([
+        monitorNetwork(ethereumConfig).catch(error => {
+          console.error('ethereum monitoring error:', error);
+          process.exit(1);
+        }),
+        monitorNetwork(zkSyncConfig).catch(error => {
+          console.error('zksync monitoring error:', error);
+          process.exit(1);
+        })
+      ])
     });
 
     // Handle server errors
