@@ -123,7 +123,7 @@ export const ContractAddresses = {
 
 export const getGovBodyFromAddress = (address: string): string => {
     const addressMapping: { [key: string]: string } = {
-      "0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E": "Token",                        // ZK Token
+      "0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E": "Token",                       // ZK Token
       "0x76705327e682F2d96943280D99464Ab61219e34f": "ZkProtocolGovernor",          // ZkProtocolGovernor Governor
       "0x3701fB675bCd4A85eb11A2467628BBe193F6e6A8": "ZkProtocolGovernor Timelock", // ZkProtocolGovernor Timelock
       "0x10560f8B7eE37571AD7E3702EEb12Bc422036E89": "ZkTokenGovernor",             // ZkTokenGovernor Governor
