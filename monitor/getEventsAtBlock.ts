@@ -31,7 +31,7 @@ export const monitorEventsAtBlock = async (
   blocknumber: number,
   provider: ethers.Provider,
   contractsConfig: { [address: string]: string[] }
-): Promise<Record<string, ParsedEvent[]>> => {
+): Promise<ParsedEvent[]> => {
   console.time(`monitor-${blocknumber}`);
   try {
     const allEventPromises = Object.entries(contractsConfig).flatMap(([address, events]) => {
@@ -78,35 +78,21 @@ export const monitorEventsAtBlock = async (
             return undefined; 
           })
       );
-      return Promise.allSettled(eventLogsPromises).then(results => 
-        results.map(result => {
-          if (result.status === 'rejected') {
-            console.error('Promise rejected:', result.reason);
-            return { status: 'fulfilled', value: [] }; // Convert rejected to fulfilled with empty array
-          }
-          return result;
-        })
-      );
+      return eventLogsPromises; 
     });
 
 
     const results = await Promise.allSettled(allEventPromises);
 
+		// check result status rejected
+
     // Process results directly into organized events
-    const organizedEvents = results.reduce((acc: Record<string, ParsedEvent[]>, result) => {
-      if (result.status === 'fulfilled') {
-        result.value.forEach(eventResult => {
-          if (eventResult.status === 'fulfilled') {
-            eventResult.value?.forEach(event => {
+    const organizedEvents = results.flatMap((result) => {
+			if (result.status === 'fulfilled' && result.value !== undefined) {
+        return result.value.filter(e => e != undefined).map(event => {
               console.log(event, 'here', event?.interface.inputs);
-              if (!event) return;
-    
-              if (!acc[event.eventName]) {
-                acc[event.eventName] = [] as ParsedEvent[];
-              }
-              
               // Construct the RSS feed item
-              acc[event.eventName].push({
+              return {
                 title: `${event.eventName} - ${getGovBodyFromAddress(event.address)}`,
                 link: event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 
                   `https://etherscan.io/tx/${event.txhash}` :
@@ -139,18 +125,15 @@ export const monitorEventsAtBlock = async (
                 proposalLink: event.args.proposalId ? JSON.stringify(event.args.proposalId, (_, value) =>
                   typeof value === 'bigint' ? value.toString() : value
                 , 2) : '',
-              });
-            });
-          }
-        });
-      }
-      return acc;
+              };
+        })
+			}
     }, {});
     console.log('Organized Events:', organizedEvents);
-    return organizedEvents;
+    return organizedEvents.filter(e => e !== undefined);
   } catch (e) {
     console.log(e);
-    return {}
+    return []
   } finally {
     console.timeEnd(`monitor-${blocknumber}`);
   }

@@ -13,10 +13,9 @@ export const monitorNetwork = async (config: NetworkConfig, blockNumber?: number
   const processEvents = async (blockToProcess: number) => {
     const events = await monitorEventsAtBlock(blockToProcess, config.provider, config.eventsMapping);
     
-    if (Object.keys(events).length > 0) {
-      Object.entries(events).forEach(([eventName, eventList]) => {
-        (eventList as any[]).forEach(event => {
-          addEventToRSS(
+    if (events.length > 0) {
+      events.forEach((event) => {
+          return addEventToRSS(
             event.address,
             event.eventName, 
             event.topics,
@@ -29,7 +28,6 @@ export const monitorNetwork = async (config: NetworkConfig, blockNumber?: number
             config.governanceName,
             event.proposalLink,
           );
-        });
       });
     }
   };
