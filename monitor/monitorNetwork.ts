@@ -1,9 +1,9 @@
 
 import { monitorEventsAtBlock } from "~/monitor/getEventsAtBlock";
-import { NetworkConfig } from "~/monitor/interfaces";
+import { NetworkConfig, ParsedEvent } from "~/monitor/interfaces";
 import { addEventToRSS } from "~/rss/rss";
 
-export const serializeEventArgs = (args: any) => {
+export const serializeEventArgs = <T extends Record<string, unknown>>(args: T): string => {
   return JSON.stringify(args, (_, value) =>
     typeof value === 'bigint' ? value.toString() : value
   , 2);
@@ -14,8 +14,8 @@ export const monitorNetwork = async (config: NetworkConfig, blockNumber?: number
     const events = await monitorEventsAtBlock(blockToProcess, config.provider, config.eventsMapping);
     
     if (Object.keys(events).length > 0) {
-      Object.entries(events).forEach(([eventName, eventList]) => {
-        (eventList as any[]).forEach(event => {
+      Object.entries(events).forEach(([_, eventList]) => {
+        (eventList as ParsedEvent[]).forEach(event => {
           addEventToRSS(
             event.address,
             event.eventName, 

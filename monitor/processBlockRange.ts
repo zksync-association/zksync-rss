@@ -13,8 +13,8 @@ export const processBlockRange = async (config: NetworkConfig, startBlock: numbe
       const events = await monitorEventsAtBlock(blockNumber, config.provider, config.eventsMapping);
       
       if (Object.keys(events).length > 0) {
-        Object.entries(events).forEach(([eventName, eventList]) => {
-          (eventList as any[]).forEach((event: ParsedEvent) => {
+        Object.entries(events).forEach(([_, eventList]) => {
+          (eventList as ParsedEvent[]).forEach(event => {
             addEventToRSS(
               event.address,
               event.eventName, 
