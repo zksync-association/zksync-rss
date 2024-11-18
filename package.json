@@ -7,6 +7,7 @@
   "scripts": {
     "backend": "npm run start --workspace=@zksync-rss/backend",
     "frontend": "npm run start --workspace=@zksync-rss/frontend",
+    "lint": "eslint . --ext .ts",
     "install:all": "npm install",
     "clean": "rm -rf node_modules && rm -rf packages/*/node_modules && rm package-lock.json"
   }
