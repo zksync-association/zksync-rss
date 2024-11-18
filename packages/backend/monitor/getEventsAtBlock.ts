@@ -38,7 +38,7 @@ export const monitorEventsAtBlock = async (
       const contract = new ethers.Contract(address, UnifiedMinimalABI, provider);
       
       const eventLogsPromises = events.map(eventName =>
-        contract.queryFilter(contract.filters[eventName](), blocknumber, blocknumber)
+        contract.queryFilter(eventName, blocknumber, blocknumber)
           .then(eventLogs => eventLogs.map(log => {
             // Get the event fragment
             const eventFragment = contract.interface.getEvent(eventName);

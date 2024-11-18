@@ -146,7 +146,7 @@ export const getGovBodyFromAddress = (address: string): string => {
     "event ChangeSecurityCouncil(address indexed _securityCouncilBefore, address indexed _securityCouncilAfter)",
     "event ChangeGuardians(address indexed _guardiansBefore, address indexed _guardiansAfter)",
     "event ChangeEmergencyUpgradeBoard(address indexed _emergencyUpgradeBoardBefore, address indexed _emergencyUpgradeBoardAfter)",
-    
+
     // Upgrade related events
     "event UpgradeStarted(bytes32 indexed _id, address proposer, uint256 value, bytes data)",
     "event UpgradeLegalVetoExtended(bytes32 indexed _id)",
@@ -154,38 +154,45 @@ export const getGovBodyFromAddress = (address: string): string => {
     "event UpgradeApprovedByGuardians(bytes32 indexed _id)",
     "event UpgradeExecuted(bytes32 indexed _id)",
     "event EmergencyUpgradeExecuted(bytes32 indexed _id)",
-    
+
     // Freeze related events
     "event SoftFreeze(uint256 _protocolFrozenUntil)",
     "event HardFreeze(uint256 _protocolFrozenUntil)",
+    "event ReinforceFreeze()",
     "event Unfreeze()",
-    
+    "event ReinforceFreezeOneChain(uint256 _chainId)",
+    "event ReinforceUnfreeze()",
+    "event ReinforceUnfreezeOneChain(uint256 _chainId)",
+
     // Call scheduling and execution events
+    "event CallScheduled(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data, bytes32 predecessor, uint256 delay)",
+    "event CallExecuted(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data)",
+    "event CallSalt(bytes32 id)",
     "event Cancelled(bytes32 indexed id)",
-    
+
     // Governance parameter events
     "event MinDelayChange(uint256 oldDuration, uint256 newDuration)",
     "event ProposalExtended(uint256 proposalId, uint64 extendedDeadline)",
     "event LateQuorumVoteExtensionSet(uint64 oldVoteExtension, uint64 newVoteExtension)",
     "event ProposalQueued(bytes32 proposalId)",
-    
+
     // Role management events
     "event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)",
     "event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)",
     "event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)",
-    
+
     // Proxy and messaging events
     "event ProxyCreation(address proxy, address singleton)",
     "event MessageSent(address user, string tag, string message)",
     "event MessengerApproved(address user, string tag, string message)",
     "event MessengerRevoked(address user, string tag, string message)",
-    
+
     // Proposal and voting events
     "event ProposalCreated(uint256 proposalId, address proposer, address[] targets, uint256[] values, string[] signatures, bytes[] calldatas, uint256 voteStart, uint256 voteEnd, string description)",
     "event ProposalExecuted(uint256 proposalId)",
     "event ProposalCanceled(uint256 proposalId)",
     "event IsProposeGuardedToggled(bool oldState, bool newState)",
-    
+
     // Governance parameter update events
     "event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum)",
     "event ProposalThresholdSet(uint256 oldProposalThreshold, uint256 newProposalThreshold)",
