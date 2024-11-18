@@ -1,9 +1,9 @@
 
 import { monitorEventsAtBlock } from "~/monitor/getEventsAtBlock";
-import { NetworkConfig } from "~/monitor/interfaces";
+import { NetworkConfig, ParsedEvent } from "~/monitor/interfaces";
 import { addEventToRSS } from "~/rss/rss";
 
-export const serializeEventArgs = (args: any) => {
+export const serializeEventArgs = <T extends Record<string, unknown>>(args: T): string => {
   return JSON.stringify(args, (_, value) =>
     typeof value === 'bigint' ? value.toString() : value
   , 2);

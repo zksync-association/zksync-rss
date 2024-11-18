@@ -158,16 +158,9 @@ export const getGovBodyFromAddress = (address: string): string => {
     // Freeze related events
     "event SoftFreeze(uint256 _protocolFrozenUntil)",
     "event HardFreeze(uint256 _protocolFrozenUntil)",
-    "event ReinforceFreeze()",
     "event Unfreeze()",
-    "event ReinforceFreezeOneChain(uint256 _chainId)",
-    "event ReinforceUnfreeze()",
-    "event ReinforceUnfreezeOneChain(uint256 _chainId)",
     
     // Call scheduling and execution events
-    "event CallScheduled(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data, bytes32 predecessor, uint256 delay)",
-    "event CallExecuted(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data)",
-    "event CallSalt(bytes32 id)",
     "event Cancelled(bytes32 indexed id)",
     
     // Governance parameter events

@@ -26,3 +26,4 @@ export interface ParsedEvent {
   description: string;
   proposalLink: string;
 }
+
