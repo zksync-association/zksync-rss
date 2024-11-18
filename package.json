@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "backend": "npm run start --workspace=@zksync-rss/backend",
-    "frontend": "npm run start --workspace=@zksync-rss/frontend",
+    "frontend": "npm run dev --workspace=@zksync-rss/frontend",
     "lint": "eslint packages/backend --ext .ts",
     "type-check": "tsc --noEmit --project packages/backend/tsconfig.json",
     "build": "npm run build --workspace=@zksync-rss/backend",
