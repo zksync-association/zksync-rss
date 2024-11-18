@@ -12,10 +12,9 @@ export const processBlockRange = async (config: NetworkConfig, startBlock: numbe
     try {
       const events = await monitorEventsAtBlock(blockNumber, config.provider, config.eventsMapping);
       
-      if (Object.keys(events).length > 0) {
-        Object.entries(events).forEach(([_, eventList]) => {
-          (eventList as ParsedEvent[]).forEach(event => {
-            addEventToRSS(
+      if (events.length > 0) {
+        events.forEach((event) => {
+            return addEventToRSS(
               event.address,
               event.eventName, 
               event.topics,
@@ -28,7 +27,6 @@ export const processBlockRange = async (config: NetworkConfig, startBlock: numbe
               config.governanceName,
               event.proposalLink,
             );
-          });
         });
       }
     } catch (error) {
