@@ -13,6 +13,7 @@ describe("Event Monitor", () => {
   let provider: any;
 
   beforeEach(async () => {
+    // @ts-ignore
     [owner, voter] = await ethers.getSigners();
     provider = ethers.provider;
 
