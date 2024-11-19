@@ -7,6 +7,7 @@ import { monitorNetwork } from "./monitor/monitorNetwork";
 import { NetworkConfig } from "~/monitor/interfaces";
 import { EventsMapping } from "~/constants";
 import { feed } from "~/rss/rss";
+import { processSpecificBlocks } from "./monitor/processSpecificBlocks";
 
 const RESTART_DELAY = 5000; // 5 seconds
 
@@ -62,16 +63,17 @@ const startServerWithRestart = () => {
     // Start the server and then begin monitoring
     const server = app.listen(PORT, async () => {
       console.log(`Server is running on http://localhost:${PORT}`);
-      await Promise.all([
-        monitorNetwork(ethereumConfig).catch(error => {
-          console.error('ethereum monitoring error:', error);
-          process.exit(1);
-        }),
-        monitorNetwork(zkSyncConfig).catch(error => {
-          console.error('zksync monitoring error:', error);
-          process.exit(1);
-        })
-      ])
+      // await Promise.all([
+      //   monitorNetwork(ethereumConfig).catch(error => {
+      //     console.error('ethereum monitoring error:', error);
+      //     process.exit(1);
+      //   }),
+      //   monitorNetwork(zkSyncConfig).catch(error => {
+      //     console.error('zksync monitoring error:', error);
+      //     process.exit(1);
+      //   })
+      // ])
+      processSpecificBlocks(zkSyncConfig);
     });
 
     // Handle server errors
