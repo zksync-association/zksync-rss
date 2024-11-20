@@ -14,7 +14,7 @@ const RESTART_DELAY = 5000; // 5 seconds
 dotenv.config();
 
 const zkSyncProvider = ethers.getDefaultProvider(process.env.ZKSYNC_RPC_PROVIDER_URL || 'https://mainnet.era.zksync.io');
-const ethereumProvider = ethers.getDefaultProvider(process.env.ETH_MAINNET_RPC_PROVIDER_URL || 'https://eth-pokt.nodies.app');
+const ethereumProvider = ethers.getDefaultProvider(process.env.ETH_MAINNET_RPC_PROVIDER_URL || 'https://ethereum.blockpi.network/v1/rpc/public');
 
 const ethereumConfig: NetworkConfig = {
   provider: ethereumProvider,
@@ -49,6 +49,25 @@ const startServerWithRestart = () => {
       res.send(rssXML);
     });
 
+    app.get('/process', async() => {
+      const results = await Promise.allSettled([
+        processSpecificBlocks(ethereumConfig),
+        processSpecificBlocks(zkSyncConfig)
+      ]);
+    
+      // Handle results and log any failures
+      results.forEach((result, index) => {
+        const network = index === 0 ? 'Ethereum' : 'ZKSync';
+        if (result.status === 'rejected') {
+          console.error(`${network} processing failed:`, result.reason);
+        } else {
+          console.log(`${network} processing completed successfully`);
+        }
+      });
+    
+      console.log('All network processing completed');
+    })
+
     // Add health check endpoint
     app.get('/health', (req, res) => {
       res.status(200).json({ status: 'healthy' });
@@ -63,17 +82,16 @@ const startServerWithRestart = () => {
     // Start the server and then begin monitoring
     const server = app.listen(PORT, async () => {
       console.log(`Server is running on http://localhost:${PORT}`);
-      // await Promise.all([
-      //   monitorNetwork(ethereumConfig).catch(error => {
-      //     console.error('ethereum monitoring error:', error);
-      //     process.exit(1);
-      //   }),
-      //   monitorNetwork(zkSyncConfig).catch(error => {
-      //     console.error('zksync monitoring error:', error);
-      //     process.exit(1);
-      //   })
-      // ])
-      processSpecificBlocks(zkSyncConfig);
+      await Promise.all([
+        monitorNetwork(ethereumConfig).catch(error => {
+          console.error('ethereum monitoring error:', error);
+          process.exit(1);
+        }),
+        monitorNetwork(zkSyncConfig).catch(error => {
+          console.error('zksync monitoring error:', error);
+          process.exit(1);
+        })
+      ])
     });
 
     // Handle server errors

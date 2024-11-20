@@ -1,6 +1,7 @@
 
+import { convertBigIntToString } from "~/constants";
 import { monitorEventsAtBlock } from "~/monitor/getEventsAtBlock";
-import { NetworkConfig, ParsedEvent } from "~/monitor/interfaces";
+import { NetworkConfig } from "~/monitor/interfaces";
 import { addEventToRSS } from "~/rss/rss";
 
 export const serializeEventArgs = <T extends Record<string, unknown>>(args: T): string => {
@@ -15,19 +16,36 @@ export const monitorNetwork = async (config: NetworkConfig, blockNumber?: number
     
     if (events.length > 0) {
       events.forEach((event) => {
-          return addEventToRSS(
-            event.address,
-            event.eventName, 
-            event.topics,
-            event.title,
-            event.description,
-            event.link,
-            config.networkName,
-            config.chainId,
-            event.blocknumber,
-            config.governanceName,
-            event.proposalLink,
-          );
+
+        const eventData = {
+          address: event.address,
+          eventName: event.eventName, 
+          topics: event.topics,
+          title: event.title,
+          link: event.link,
+          networkName: config.networkName, 
+          chainId: config.chainId,
+          blockNumber: event.blocknumber,
+          category: event.topics[0],
+          proposalLink: event.proposalLink,
+          timestamp: event.timestamp,
+          eventArgs: convertBigIntToString(event.args)
+        };
+  
+        return addEventToRSS(
+          eventData.address,
+          eventData.eventName,
+          eventData.topics,
+          eventData.title,
+          eventData.link,
+          eventData.networkName,
+          eventData.chainId,
+          eventData.blockNumber,
+          eventData.category,
+          eventData.proposalLink,
+          eventData.timestamp,
+          eventData.eventArgs
+        );
       });
     }
   };

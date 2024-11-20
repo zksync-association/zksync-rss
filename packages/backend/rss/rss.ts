@@ -33,7 +33,13 @@ const loadExistingFeed = (): RSS => {
   if (fs.existsSync(RSS_FILE_PATH)) {
     try {
       const savedItems = JSON.parse(fs.readFileSync(RSS_FILE_PATH, 'utf-8'));
-      savedItems.forEach((item: RSS.ItemOptions) => {
+      // Sort items by date in descending order (newest first)
+      const sortedItems = savedItems.sort((a: RSS.ItemOptions, b: RSS.ItemOptions) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return dateB - dateA;
+      });
+      sortedItems.forEach((item: RSS.ItemOptions) => {
         feed.item(item);
       });
     } catch (error) {
@@ -68,29 +74,52 @@ const saveFeedToFile = () => {
 };
 
 // Function to format and add an event as an RSS item
-export const addEventToRSS = (address: string, eventName: string, topics: string[], title: string, description: string, link: string, networkName: string, chainID: number, block: number, govBody: string, proposalLink: string | null) => {
+export const addEventToRSS = (
+  address: string, 
+  eventName: string, 
+  topics: string[], 
+  title: string, 
+  link: string, 
+  networkName: string, 
+  chainId: number, 
+  block: number, 
+  govBody: string, 
+  proposalLink: string | null, 
+  timestamp: string,
+  eventArgs: Record<string, unknown>
+) => {
+  const guid = createUniqueID(title + block + link);
 
-  const guid = createUniqueID(title + description);
+  const formattedDescription = `
+    <h3>Event Details</h3>
+    <ul>
+      <li><strong>Network:</strong> ${networkName}</li>
+      <li><strong>Chain ID:</strong> ${chainId}</li>
+      <li><strong>Block:</strong> ${block}</li>
+      <li><strong>Timestamp:</strong> ${new Date(timestamp).toLocaleString()}</li>
+    </ul>
+
+    <h3>Governance Info</h3>
+    <ul>
+      <li><strong>Governance Body:</strong> ${govBody}</li>
+      <li><strong>Event Type:</strong> ${eventName}</li>
+      <li><strong>Contract Address:</strong> ${address}</li>
+      ${proposalLink ? `<li><strong>Proposal Link:</strong> <a href="${proposalLink}">View Proposal</a></li>` : ''}
+    </ul>
+
+    <h3>Event Data</h3>
+    <pre>${JSON.stringify(eventArgs, null, 2)}</pre>`;
 
   const newItem: RSS.ItemOptions = {
-      title,
-      url: link,
-      description: `
-          <strong>Network:</strong> ${networkName}<br />
-          <strong>Address:</strong> ${address}<br />
-          <strong>Chain ID:</strong> ${chainID}<br />
-          <strong>Block:</strong> ${block}<br />
-          <strong>Governance Body:</strong> ${govBody}<br />
-          <strong>Event Type:</strong> ${eventName}<br />
-          ${proposalLink ? `<strong>Proposal Link:</strong> <a href="${proposalLink}">${proposalLink}</a><br />` : ""}
-          <pre>${description}</pre>
-      `,
-      author: govBody,
-      categories: topics,
-      date: new Date(),
-      guid,
+    title,
+    url: link,
+    description: formattedDescription,
+    author: govBody,
+    categories: topics,
+    date: new Date(timestamp),
+    guid,
   };
 
   feed.item(newItem);
-  saveFeedToFile(); // Save after each new item
-}
+  saveFeedToFile();
+};

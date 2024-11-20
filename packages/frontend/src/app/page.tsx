@@ -1,7 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { Suspense } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 
 interface FeedItem {
@@ -91,7 +89,7 @@ export default async function Home() {
 
         <div className="space-y-6">
           {items.map((item, index) => (
-            <div key={item.guid || index}>
+            <div key={`${item.guid}-${index}`}>
               <Card className="overflow-hidden border border-slate-800 bg-slate-950 shadow-lg">
                 <CardHeader className="border-b border-slate-800">
                   <CardTitle className="text-xl">
@@ -115,10 +113,10 @@ export default async function Home() {
                     dangerouslySetInnerHTML={{ __html: item.description }}
                   />
                   {item.categories && item.categories.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap gap-2" >
                       {item.categories.map((category, i) => (
                         <span 
-                          key={i}
+                          key={`item-${i}`}
                           className="px-3 py-1 rounded-full text-xs bg-slate-800 text-slate-200"
                         >
                           {category}

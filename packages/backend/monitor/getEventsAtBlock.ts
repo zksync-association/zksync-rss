@@ -1,31 +1,6 @@
 import { ethers } from "ethers";
-import { getGovBodyFromAddress, UnifiedMinimalABI, EventsMapping } from "~/constants";
+import { getGovBodyFromAddress, UnifiedMinimalABI, EventsMapping, getCategory } from "../constants";
 import { ParsedEvent } from "./interfaces";
-
-function getCategory(eventName: string): string {
-  if (!eventName) return "Unknown";
-
-  // Define mappings of keywords to categories
-  const categories = {
-    "Protocol": ["Proposal Submitted", "Vote Delay", "Voting Period", "Met Quorum", "Vote Period Expiring", "Queued", "Executed", "Vetoed"],
-    "Token": ["Token Assembly", "Increase Staking Rewards"],
-    "GovOps": ["Governance", "Security Council", "Token Assembly"],
-    "Emergency Upgrade": ["Emergency Upgrade", "Upgrade Board"],
-    "Freeze": ["Soft Freeze", "Hard Freeze"],
-    "Message": ["LateQuorumVoteExtensionSet", "Message"]
-  };
-
-  // Search for matching keywords in the event name
-  for (const [category, keywords] of Object.entries(categories)) {
-    if (keywords.some(keyword => eventName.includes(keyword))) {
-      return category;
-    }
-  }
-
-  // Default category if no match is found
-  return "Other";
-}
-
 
 export const monitorEventsAtBlock = async (
   blocknumber: number,
@@ -83,7 +58,8 @@ export const monitorEventsAtBlock = async (
 
 
     const results = await Promise.allSettled(allEventPromises);
-
+    const block = await provider.getBlock(blocknumber);
+    const blockTimestamp = block?.timestamp ? new Date(block.timestamp * 1000) : new Date();
 		// check result status rejected
 
     // Process results directly into organized events
@@ -93,6 +69,10 @@ export const monitorEventsAtBlock = async (
               console.log(event, 'here', event?.interface.inputs);
               // Construct the RSS feed item
               return {
+                interface: event.interface,
+                rawData: event.rawData,
+                decodedData: event.decodedData,
+                description: '', // Add a default empty description
                 title: `${event.eventName} - ${getGovBodyFromAddress(event.address)}`,
                 link: event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 
                   `https://etherscan.io/tx/${event.txhash}` :
@@ -101,30 +81,15 @@ export const monitorEventsAtBlock = async (
                 eventName: event.eventName,
                 blocknumber: event.blocknumber,
                 address: event.address,
-                interface: event.interface,
                 args: event.args,
-                rawData: event.rawData,
-                decodedData: event.decodedData,
-                description: `
-                  <![CDATA[
-                    <strong>Network:</strong> ${event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 'Ethereum Mainnet' : 'ZKsync Era'}<br />
-                    <strong>Chain ID:</strong> ${event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? '1' : '324'}<br />
-                    <strong>Block:</strong> ${event.blocknumber}<br />
-                    <strong>Governance Body:</strong> ${getGovBodyFromAddress(event.address) || 'Guardians'}<br />
-                    <strong>Event Type:</strong> ${event.eventName}<br />
-                    <strong>Address:</strong> ${event.address}<br />
-                    <strong>Event:</strong> ${event.eventName}<br />
-                    <pre>${JSON.stringify(event.args, (_, value) =>
-                      typeof value === 'bigint' ? value.toString() : value
-                    , 2)}
-                    </pre>
-                  ]]>
-                `,
-                topics: [getCategory(event.eventName)],
-                timestamp: new Date().toISOString(),
-                proposalLink: event.args.proposalId ? JSON.stringify(event.args.proposalId, (_, value) =>
-                  typeof value === 'bigint' ? value.toString() : value
-                , 2) : '',
+                topics: [getCategory(event.address)],
+                timestamp: blockTimestamp.toISOString(),
+                proposalLink: event.args.proposalId ? 
+                  `https://vote.zknation.io/dao/proposal/${event.args.proposalId}?govId=eip155:${
+                    event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? '1' : '324'
+                  }:${event.address}` : '',
+                networkName: event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 'Ethereum Mainnet' : 'ZKSync Era',
+                chainId: event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? '1' : '324'
               };
         })
 			}

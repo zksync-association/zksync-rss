@@ -1,6 +1,7 @@
 import { monitorEventsAtBlock } from "~/monitor/getEventsAtBlock";
-import { NetworkConfig, ParsedEvent } from "~/monitor/interfaces";
+import { NetworkConfig } from "~/monitor/interfaces";
 import { addEventToRSS } from "~/rss/rss";
+import { convertBigIntToString } from "../constants";
 
 export const processBlockRange = async (config: NetworkConfig, startBlock: number) => {
   const currentBlock = await config.provider.getBlockNumber();
@@ -19,13 +20,14 @@ export const processBlockRange = async (config: NetworkConfig, startBlock: numbe
               event.eventName, 
               event.topics,
               event.title,
-              event.description,
               event.link,
               config.networkName,
               config.chainId,
               event.blocknumber,
               config.governanceName,
               event.proposalLink,
+              event.timestamp,
+              convertBigIntToString(event.args)
             );
         });
       }
