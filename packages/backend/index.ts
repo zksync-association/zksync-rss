@@ -1,20 +1,14 @@
 import { ethers } from "ethers";
 import dotenv from 'dotenv';
-import express from "express";
-import { spawn } from 'child_process';
-
-import { monitorNetwork } from "./monitor/monitorNetwork";
 import { NetworkConfig } from "~/monitor/interfaces";
 import { EventsMapping } from "~/constants";
+import { monitorNetwork } from "./monitor/monitorNetwork";
 import { feed } from "~/rss/rss";
-import { processSpecificBlocks } from "./monitor/processSpecificBlocks";
-
-const RESTART_DELAY = 5000; // 5 seconds
 
 dotenv.config();
 
-const zkSyncProvider = ethers.getDefaultProvider(process.env.ZKSYNC_RPC_PROVIDER_URL || 'https://mainnet.era.zksync.io');
-const ethereumProvider = ethers.getDefaultProvider(process.env.ETH_MAINNET_RPC_PROVIDER_URL || 'https://ethereum.blockpi.network/v1/rpc/public');
+const zkSyncProvider = ethers.getDefaultProvider(process.env.ZKSYNC_RPC_URL || 'https://mainnet.era.zksync.io');
+const ethereumProvider = ethers.getDefaultProvider(process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com');
 
 const ethereumConfig: NetworkConfig = {
   provider: ethereumProvider,
@@ -36,114 +30,37 @@ const zkSyncConfig: NetworkConfig = {
   pollInterval: 1000
 };
 
-
-const startServerWithRestart = () => {
-  const startServer = () => {
-    const app = express();
-    const PORT = process.env.PORT || 3001;
-
-    // Endpoint to serve the RSS feed
-    app.get('/rss', (req, res) => {
-      const rssXML = feed.xml({ indent: true });
-      res.set('Content-Type', 'application/rss+xml');
-      res.send(rssXML);
-    });
-
-    app.get('/process', async() => {
-      const results = await Promise.allSettled([
-        processSpecificBlocks(ethereumConfig),
-        processSpecificBlocks(zkSyncConfig)
-      ]);
-    
-      // Handle results and log any failures
-      results.forEach((result, index) => {
-        const network = index === 0 ? 'Ethereum' : 'ZKSync';
-        if (result.status === 'rejected') {
-          console.error(`${network} processing failed:`, result.reason);
-        } else {
-          console.log(`${network} processing completed successfully`);
-        }
-      });
-    
-      console.log('All network processing completed');
-    })
-
-    // Add health check endpoint
-    app.get('/health', (req, res) => {
-      res.status(200).json({ status: 'healthy' });
-    });
-
-    // Error handling middleware
-    app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-      console.error('Server error:', err);
-      res.status(500).send('Internal Server Error');
-    });
-
-    // Start the server and then begin monitoring
-    const server = app.listen(PORT, async () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
-      await Promise.all([
-        monitorNetwork(ethereumConfig).catch(error => {
-          console.error('ethereum monitoring error:', error);
-          process.exit(1);
-        }),
-        monitorNetwork(zkSyncConfig).catch(error => {
-          console.error('zksync monitoring error:', error);
-          process.exit(1);
-        })
-      ])
-    });
-
-    // Handle server errors
-    server.on('error', (error) => {
-        console.error('Server error:', error);
-        process.exit(1);
-    });
-
-    // Handle uncaught exceptions
-    process.on('uncaughtException', (error) => {
-        console.error('Uncaught exception:', error);
-        process.exit(1);
-    });
-
-    // Handle unhandled promise rejections
-    process.on('unhandledRejection', (error) => {
-        console.error('Unhandled rejection:', error);
-        process.exit(1);
-    });
+// Separate entry point for RSS feed generation
+export const generateRssFeed = (): string => {
+  return feed.xml({ indent: true });
 };
 
-    try {
-        startServer();
-    } catch (error) {
-        console.error('Server crashed:', error);
-        console.log(`Restarting server in ${RESTART_DELAY/1000} seconds...`);
-        setTimeout(startServerWithRestart, RESTART_DELAY);
-    }
+// Separate entry point for network monitoring
+export const startNetworkMonitoring = async () => {
+  try {
+    await Promise.all([
+      monitorNetwork(ethereumConfig),
+      monitorNetwork(zkSyncConfig)
+    ]);
+  } catch (error) {
+    console.error('Monitoring error:', error);
+    throw error;
+  }
 };
 
-// Initial start
-startServerWithRestart();
+// Handle uncaught errors
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+  process.exit(1);
+});
 
-// For production deployment, you might want to use a process manager
-if (process.env.NODE_ENV === 'production') {
-    const restartScript = () => {
-        const child = spawn(process.argv[0], process.argv.slice(1), {
-            detached: true,
-            stdio: 'inherit'
-        });
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled rejection:', error);
+  process.exit(1);
+});
 
-        child.on('exit', (code) => {
-            console.log(`Process exited with code ${code}`);
-            console.log('Restarting...');
-            setTimeout(restartScript, RESTART_DELAY);
-        });
-    };
-
-    // Handle SIGTERM for graceful shutdown
-    process.on('SIGTERM', () => {
-        console.log('Received SIGTERM. Performing graceful shutdown...');
-        // Add any cleanup logic here
-        process.exit(0);
-    });
-}
+// Handle SIGTERM for graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM. Performing graceful shutdown...');
+  process.exit(0);
+});

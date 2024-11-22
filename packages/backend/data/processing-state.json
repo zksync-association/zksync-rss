@@ -1,0 +1,12 @@
+{
+  "Ethereum Mainnet": {
+    "lastProcessedBlock": 21244258,
+    "hasError": false,
+    "lastUpdated": "2024-11-22T16:04:56.464Z"
+  },
+  "ZKSync": {
+    "lastProcessedBlock": 49547103,
+    "hasError": false,
+    "lastUpdated": "2024-11-22T16:04:57.370Z"
+  }
+}
