@@ -1,38 +1,5 @@
 [
   {
-    "title": "ChangeSecurityCouncil - Protocol Upgrade Handler",
-    "description": "\n    <h3>Event Details</h3>\n    <ul>\n      <li><strong>Network:</strong> Ethereum Mainnet</li>\n      <li><strong>Chain ID:</strong> 1</li>\n      <li><strong>Block:</strong> 20486023</li>\n      <li><strong>Timestamp:</strong> 8/8/2024, 3:40:59 PM</li>\n    </ul>\n\n    <h3>Governance Info</h3>\n    <ul>\n      <li><strong>Governance Body:</strong> Ethereum Governance</li>\n      <li><strong>Event Type:</strong> ChangeSecurityCouncil</li>\n      <li><strong>Contract Address:</strong> 0x8f7a9912416e8AdC4D9c21FAe1415D3318A11897</li>\n      \n    </ul>\n\n    <h3>Event Data</h3>\n    <pre>{\n  \"_securityCouncilBefore\": \"0x0000000000000000000000000000000000000000\",\n  \"_securityCouncilAfter\": \"0xBDFfCC71FE84020238F2990a6D2954e87355De0D\"\n}</pre>",
-    "url": "https://explorer.zksync.io/tx/0x323113e3845b24ab036db95248c0837fa67cf932afabe150d8dcf944386f39aa",
-    "guid": "0x2ed250b3d1fc0899e8076e6acfc285d7b1faa0ad818c0ab59e7de2c6b8aa03b8",
-    "categories": [
-      "Protocol"
-    ],
-    "author": "Ethereum Governance",
-    "date": "2024-08-08T19:40:59.000Z"
-  },
-  {
-    "title": "ChangeGuardians - Protocol Upgrade Handler",
-    "description": "\n    <h3>Event Details</h3>\n    <ul>\n      <li><strong>Network:</strong> Ethereum Mainnet</li>\n      <li><strong>Chain ID:</strong> 1</li>\n      <li><strong>Block:</strong> 20486023</li>\n      <li><strong>Timestamp:</strong> 8/8/2024, 3:40:59 PM</li>\n    </ul>\n\n    <h3>Governance Info</h3>\n    <ul>\n      <li><strong>Governance Body:</strong> Ethereum Governance</li>\n      <li><strong>Event Type:</strong> ChangeGuardians</li>\n      <li><strong>Contract Address:</strong> 0x8f7a9912416e8AdC4D9c21FAe1415D3318A11897</li>\n      \n    </ul>\n\n    <h3>Event Data</h3>\n    <pre>{\n  \"_guardiansBefore\": \"0x0000000000000000000000000000000000000000\",\n  \"_guardiansAfter\": \"0xD677e09324F8Bb3cC64F009973693f751c33A888\"\n}</pre>",
-    "url": "https://explorer.zksync.io/tx/0x323113e3845b24ab036db95248c0837fa67cf932afabe150d8dcf944386f39aa",
-    "guid": "0x17b5cac323f40e6739aa5880ec2a56fe0ae6642a5b61b55d5ebf2a356065d901",
-    "categories": [
-      "Protocol"
-    ],
-    "author": "Ethereum Governance",
-    "date": "2024-08-08T19:40:59.000Z"
-  },
-  {
-    "title": "ChangeEmergencyUpgradeBoard - Protocol Upgrade Handler",
-    "description": "\n    <h3>Event Details</h3>\n    <ul>\n      <li><strong>Network:</strong> Ethereum Mainnet</li>\n      <li><strong>Chain ID:</strong> 1</li>\n      <li><strong>Block:</strong> 20486023</li>\n      <li><strong>Timestamp:</strong> 8/8/2024, 3:40:59 PM</li>\n    </ul>\n\n    <h3>Governance Info</h3>\n    <ul>\n      <li><strong>Governance Body:</strong> Ethereum Governance</li>\n      <li><strong>Event Type:</strong> ChangeEmergencyUpgradeBoard</li>\n      <li><strong>Contract Address:</strong> 0x8f7a9912416e8AdC4D9c21FAe1415D3318A11897</li>\n      \n    </ul>\n\n    <h3>Event Data</h3>\n    <pre>{\n  \"_emergencyUpgradeBoardBefore\": \"0x0000000000000000000000000000000000000000\",\n  \"_emergencyUpgradeBoardAfter\": \"0xdEFd1eDEE3E8c5965216bd59C866f7f5307C9b29\"\n}</pre>",
-    "url": "https://explorer.zksync.io/tx/0x323113e3845b24ab036db95248c0837fa67cf932afabe150d8dcf944386f39aa",
-    "guid": "0x4c960cbd9c0733c12f6d9652bca5e061761f99931db74d2c8e091b1927aeca9d",
-    "categories": [
-      "Protocol"
-    ],
-    "author": "Ethereum Governance",
-    "date": "2024-08-08T19:40:59.000Z"
-  },
-  {
     "title": "CallExecuted - ZkTokenGovernor Timelock",
     "description": "\n    <h3>Event Details</h3>\n    <ul>\n      <li><strong>Network:</strong> ZKSync</li>\n      <li><strong>Chain ID:</strong> 324</li>\n      <li><strong>Block:</strong> 49089754</li>\n      <li><strong>Timestamp:</strong> 11/16/2024, 10:05:53 AM</li>\n    </ul>\n\n    <h3>Governance Info</h3>\n    <ul>\n      <li><strong>Governance Body:</strong> ZKSync Governance</li>\n      <li><strong>Event Type:</strong> CallExecuted</li>\n      <li><strong>Contract Address:</strong> 0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6</li>\n      \n    </ul>\n\n    <h3>Event Data</h3>\n    <pre>{\n  \"id\": \"0x0e8426827295763e1c264da63b14e64fe6146824dccf5c1af9054857c1af165f\",\n  \"index\": \"0\",\n  \"target\": \"0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E\",\n  \"value\": \"0\",\n  \"data\": \"0x2f2ff15d9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6000000000000000000000000e546aeaac57584da7554e7f88154dedad30a82b0\"\n}</pre>",
     "url": "https://explorer.zksync.io/tx/0x03d1ec29e5dbed013a77d11e53ae3aab21177bb4fcc2ee47de2074ad460b3636",
@@ -141,6 +108,39 @@
     ],
     "author": "ZKSync Governance",
     "date": "2024-11-16T15:05:53.000Z"
+  },
+  {
+    "title": "ChangeSecurityCouncil - Protocol Upgrade Handler",
+    "description": "\n    <h3>Event Details</h3>\n    <ul>\n      <li><strong>Network:</strong> Ethereum Mainnet</li>\n      <li><strong>Chain ID:</strong> 1</li>\n      <li><strong>Block:</strong> 20486023</li>\n      <li><strong>Timestamp:</strong> 8/8/2024, 3:40:59 PM</li>\n    </ul>\n\n    <h3>Governance Info</h3>\n    <ul>\n      <li><strong>Governance Body:</strong> Ethereum Governance</li>\n      <li><strong>Event Type:</strong> ChangeSecurityCouncil</li>\n      <li><strong>Contract Address:</strong> 0x8f7a9912416e8AdC4D9c21FAe1415D3318A11897</li>\n      \n    </ul>\n\n    <h3>Event Data</h3>\n    <pre>{\n  \"_securityCouncilBefore\": \"0x0000000000000000000000000000000000000000\",\n  \"_securityCouncilAfter\": \"0xBDFfCC71FE84020238F2990a6D2954e87355De0D\"\n}</pre>",
+    "url": "https://explorer.zksync.io/tx/0x323113e3845b24ab036db95248c0837fa67cf932afabe150d8dcf944386f39aa",
+    "guid": "0x2ed250b3d1fc0899e8076e6acfc285d7b1faa0ad818c0ab59e7de2c6b8aa03b8",
+    "categories": [
+      "Protocol"
+    ],
+    "author": "Ethereum Governance",
+    "date": "2024-08-08T19:40:59.000Z"
+  },
+  {
+    "title": "ChangeGuardians - Protocol Upgrade Handler",
+    "description": "\n    <h3>Event Details</h3>\n    <ul>\n      <li><strong>Network:</strong> Ethereum Mainnet</li>\n      <li><strong>Chain ID:</strong> 1</li>\n      <li><strong>Block:</strong> 20486023</li>\n      <li><strong>Timestamp:</strong> 8/8/2024, 3:40:59 PM</li>\n    </ul>\n\n    <h3>Governance Info</h3>\n    <ul>\n      <li><strong>Governance Body:</strong> Ethereum Governance</li>\n      <li><strong>Event Type:</strong> ChangeGuardians</li>\n      <li><strong>Contract Address:</strong> 0x8f7a9912416e8AdC4D9c21FAe1415D3318A11897</li>\n      \n    </ul>\n\n    <h3>Event Data</h3>\n    <pre>{\n  \"_guardiansBefore\": \"0x0000000000000000000000000000000000000000\",\n  \"_guardiansAfter\": \"0xD677e09324F8Bb3cC64F009973693f751c33A888\"\n}</pre>",
+    "url": "https://explorer.zksync.io/tx/0x323113e3845b24ab036db95248c0837fa67cf932afabe150d8dcf944386f39aa",
+    "guid": "0x17b5cac323f40e6739aa5880ec2a56fe0ae6642a5b61b55d5ebf2a356065d901",
+    "categories": [
+      "Protocol"
+    ],
+    "author": "Ethereum Governance",
+    "date": "2024-08-08T19:40:59.000Z"
+  },
+  {
+    "title": "ChangeEmergencyUpgradeBoard - Protocol Upgrade Handler",
+    "description": "\n    <h3>Event Details</h3>\n    <ul>\n      <li><strong>Network:</strong> Ethereum Mainnet</li>\n      <li><strong>Chain ID:</strong> 1</li>\n      <li><strong>Block:</strong> 20486023</li>\n      <li><strong>Timestamp:</strong> 8/8/2024, 3:40:59 PM</li>\n    </ul>\n\n    <h3>Governance Info</h3>\n    <ul>\n      <li><strong>Governance Body:</strong> Ethereum Governance</li>\n      <li><strong>Event Type:</strong> ChangeEmergencyUpgradeBoard</li>\n      <li><strong>Contract Address:</strong> 0x8f7a9912416e8AdC4D9c21FAe1415D3318A11897</li>\n      \n    </ul>\n\n    <h3>Event Data</h3>\n    <pre>{\n  \"_emergencyUpgradeBoardBefore\": \"0x0000000000000000000000000000000000000000\",\n  \"_emergencyUpgradeBoardAfter\": \"0xdEFd1eDEE3E8c5965216bd59C866f7f5307C9b29\"\n}</pre>",
+    "url": "https://explorer.zksync.io/tx/0x323113e3845b24ab036db95248c0837fa67cf932afabe150d8dcf944386f39aa",
+    "guid": "0x4c960cbd9c0733c12f6d9652bca5e061761f99931db74d2c8e091b1927aeca9d",
+    "categories": [
+      "Protocol"
+    ],
+    "author": "Ethereum Governance",
+    "date": "2024-08-08T19:40:59.000Z"
   },
   {
     "title": "CallScheduled - ZkTokenGovernor Timelock",

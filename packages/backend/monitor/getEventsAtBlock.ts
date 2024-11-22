@@ -59,6 +59,7 @@ export const monitorEventsAtBlock = async (
 
     const results = await Promise.allSettled(allEventPromises);
     const block = await provider.getBlock(blocknumber);
+    
     const blockTimestamp = block?.timestamp ? new Date(block.timestamp * 1000) : new Date();
 		// check result status rejected
 

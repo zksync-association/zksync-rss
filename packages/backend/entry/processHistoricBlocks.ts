@@ -4,13 +4,10 @@ import { NetworkConfig } from "../monitor/interfaces";
 import { monitorEventsAtBlock } from "../monitor/getEventsAtBlock";
 import { addEventToRSS } from "../rss/rss";
 import dotenv from 'dotenv';
-import fs from 'fs';
 import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const BATCH_SIZE = 10;
-const BATCH_DELAY = 1000;
 interface BlockAddress {
   address: string;
   blocks: number[];
