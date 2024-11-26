@@ -63,17 +63,16 @@ const startServerWithRestart = () => {
     // Start the server and then begin monitoring
     const server = app.listen(PORT, async () => {
       console.log(`Server is running on http://localhost:${PORT}`);
-      // await Promise.all([
-      //   monitorNetwork(ethereumConfig).catch(error => {
-      //     console.error('ethereum monitoring error:', error);
-      //     process.exit(1);
-      //   }),
-      //   monitorNetwork(zkSyncConfig).catch(error => {
-      //     console.error('zksync monitoring error:', error);
-      //     process.exit(1);
-      //   })
-      // ])
-      processSpecificBlocks(zkSyncConfig);
+      await Promise.all([
+        monitorNetwork(ethereumConfig).catch(error => {
+          console.error('ethereum monitoring error:', error);
+          process.exit(1);
+        }),
+        monitorNetwork(zkSyncConfig).catch(error => {
+          console.error('zksync monitoring error:', error);
+          process.exit(1);
+        })
+      ])
     });
 
     // Handle server errors
