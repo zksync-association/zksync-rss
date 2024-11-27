@@ -20,48 +20,87 @@ interface FeedMetadata {
   language?: string;
 }
 
-async function getFeed(): Promise<{ metadata: FeedMetadata; items: FeedItem[] }> {
-  const response = await fetch('http://localhost:3001/rss', {
-    next: { revalidate: 60 }
-  });
+interface Feed {
+  metadata: FeedMetadata;
+  items: FeedItem[];
+}
+
+async function getFeed(): Promise<Feed> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   
-  if (!response.ok) {
-    throw new Error('Failed to fetch RSS feed');
+  if (!apiUrl) {
+    return {
+      metadata: {
+        title: 'Configuration Error',
+        description: 'The API URL has not been configured. Please set NEXT_PUBLIC_API_URL environment variable.',
+        link: '',
+      },
+      items: []
+    };
   }
 
-  const data = await response.text();
-  const parser = new XMLParser({
-    ignoreAttributes: false,
-    parseAttributeValue: true
-  });
-  
-  const result = parser.parse(data);
-  const channel = result.rss.channel;
-  const items = channel.item;
+  try {
+    const response = await fetch(`${apiUrl}/rss`, {
+      next: { revalidate: 60 }
+    });
+    const data = await response.text();
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      parseAttributeValue: true
+    });
+    
+    const result = parser.parse(data);
+    const channel = result.rss.channel;
+    const items = channel.item;
 
-  return {
-    metadata: {
-      title: channel.title || '',
-      description: channel.description || '',
-      link: channel.link || '',
-      lastBuildDate: channel.lastBuildDate || '',
-      language: channel.language || 'en'
-    },
-    items: (Array.isArray(items) ? items : [items]).map(item => ({
-      title: item.title || '',
-      description: item.description || '',
-      url: item.link || '',
-      guid: item.guid || '',
-      categories: Array.isArray(item.category) ? item.category : item.category ? [item.category] : [],
-      author: item.author || '',
-      date: item.pubDate || new Date().toISOString()
-    }))
-  };
+    return {
+      metadata: {
+        title: channel.title || '',
+        description: channel.description || '',
+        link: channel.link || '',
+        lastBuildDate: channel.lastBuildDate || '',
+        language: channel.language || 'en'
+      },
+      items: (Array.isArray(items) ? items : [items]).map(item => ({
+        title: item.title || '',
+        description: item.description || '',
+        url: item.link || '',
+        guid: item.guid || '',
+        categories: Array.isArray(item.category) ? item.category : item.category ? [item.category] : [],
+        author: item.author || '',
+        date: item.pubDate || new Date().toISOString()
+      }))
+    };
+  } catch (e) {
+    return {
+      metadata: {
+        title: 'Feed Not Found',
+        description: 'The RSS feed could not be loaded at this time.',
+        link: '',
+      },
+      items: []
+    };
+  }
 }
 
 export default async function Home() {
   const { metadata, items } = await getFeed();
-  
+
+  if (metadata.title === 'Feed Not Found') {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Card className="w-96 border border-slate-800 bg-slate-950">
+          <CardHeader>
+            <CardTitle className="text-red-400">{metadata.title}</CardTitle>
+            <CardDescription className="text-slate-400">
+              {metadata.description}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-900">
       <main className="container mx-auto py-8 px-4 max-w-4xl">

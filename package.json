@@ -9,7 +9,7 @@
     "frontend": "npm run dev --workspace=@zksync-rss/frontend",
     "lint": "eslint packages/backend --ext .ts",
     "type-check": "tsc --noEmit --project packages/backend/tsconfig.json",
-    "build": "npm run build --workspace=@zksync-rss/backend",
+    "build": "npm run build -w @zksync-rss/backend -w @zksync-rss/frontend",
     "install:all": "npm install",
     "clean": "rm -rf node_modules && rm -rf packages/*/node_modules && rm package-lock.json"
   }

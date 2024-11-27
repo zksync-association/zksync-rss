@@ -12,8 +12,6 @@ export const EventsMapping = {
         "ProposalThresholdSet",
         "ProposalExtended",
         "LateQuorumVoteExtensionSet",
-        "CallScheduled",
-        "CallExecuted",
         "MinDelayChange",
         "ProposalExecuted",
         "ProposalCanceled",
@@ -23,8 +21,6 @@ export const EventsMapping = {
         "RoleAdminChanged",
         "RoleGranted",
         "RoleRevoked",
-        "CallScheduled",
-        "CallExecuted",
         "MinDelayChange",
     ],
     "0x10560f8B7eE37571AD7E3702EEb12Bc422036E89": [
@@ -36,8 +32,6 @@ export const EventsMapping = {
         "VotingDelaySet",
         "ProposalExtended",
         "LateQuorumVoteExtensionSet",
-        "CallScheduled",
-        "CallExecuted",
         "MinDelayChange",
         "ProposalExecuted",
         "ProposalCanceled",
@@ -47,16 +41,12 @@ export const EventsMapping = {
         "RoleAdminChanged",
         "RoleGranted",
         "RoleRevoked",
-        "CallScheduled",
-        "CallExecuted",
         "MinDelayChange",
     ],
     "0x496869a7575A1f907D1C5B1eca28e4e9E382afAb": [
         "ProposalExecuted",
         "ProposalCanceled",
         "ProposalCreated",
-        "CallScheduled",
-        "CallExecuted",
         "ProposalExtended",
         "LateQuorumVoteExtensionSet",
         "ProposalThresholdSet",
@@ -69,8 +59,6 @@ export const EventsMapping = {
         "RoleAdminChanged",
         "RoleGranted",
         "RoleRevoked",
-        "CallScheduled",
-        "CallExecuted",
         "MinDelayChange",
     ],
     "0x5d89444f84d544deBbD13D672f314A4DfaE3f77C": [
@@ -207,9 +195,6 @@ export const getGovBodyFromAddress = (address: string): string => {
     "event ReinforceUnfreezeOneChain(uint256 _chainId)",
 
     // Call scheduling and execution events
-    "event CallScheduled(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data, bytes32 predecessor, uint256 delay)",
-    "event CallExecuted(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data)",
-    "event CallSalt(bytes32 id)",
     "event Cancelled(bytes32 indexed id)",
 
     // Governance parameter events

@@ -3,11 +3,10 @@ import dotenv from 'dotenv';
 import express from "express";
 import { spawn } from 'child_process';
 
-import { monitorNetwork } from "./monitor/monitorNetwork";
+import { monitorNetwork } from "~/monitor/monitorNetwork";
 import { NetworkConfig } from "~/monitor/interfaces";
 import { EventsMapping } from "~/constants";
 import { feed } from "~/rss/rss";
-import { processSpecificBlocks } from "./monitor/processSpecificBlocks";
 
 const RESTART_DELAY = 5000; // 5 seconds
 
