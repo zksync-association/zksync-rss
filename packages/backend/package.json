@@ -7,9 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts",
     "type-check": "tsc --noEmit",
-    "monitor": "tsx ./entry/startConstantMonitoring.ts",
     "process-blocks": "tsx ./entry/processBlockRange.ts",
-    "generate-rss": "tsx ./entry/generateRss.ts",
     "process-historic-blocks": "tsx ./entry/processHistoricBlocks.ts",
     "build": "tsc"
   },
@@ -26,6 +24,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.14.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.11.1",
     "express": "^4.21.1",

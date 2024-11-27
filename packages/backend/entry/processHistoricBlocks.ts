@@ -1,16 +1,53 @@
 import { ethers } from 'ethers';
-import { convertBigIntToString, EventsMapping } from "../constants";
-import { NetworkConfig } from "../monitor/interfaces";
-import { monitorEventsAtBlock } from "../monitor/getEventsAtBlock";
-import { addEventToRSS } from "../rss/rss";
+import { convertBigIntToString, EventsMapping, NetworkConfig, monitorEventsAtBlock, downloadFromGCS, uploadToGCS, GCS_BUCKET_NAME, GCS_RSS_PATH } from "~/shared";
+import { addEventToRSS, generateRss } from "~/rss/rss";
+import fs from 'fs';
 import dotenv from 'dotenv';
 import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
+const RSS_OUTPUT_PATH = path.join(__dirname, '../data/feed.xml');
 
 interface BlockAddress {
   address: string;
   blocks: number[];
+}
+
+async function updateRSSFeedIfLonger() {
+  try {
+    // Generate new RSS feed
+    const newRssContent = generateRss();
+    
+    // Try to download existing RSS feed from GCS
+    let existingContent = '';
+    let shouldUpdate = false;
+    
+    try {
+      await downloadFromGCS(GCS_BUCKET_NAME, GCS_RSS_PATH, RSS_OUTPUT_PATH);
+      existingContent = fs.readFileSync(RSS_OUTPUT_PATH, 'utf8');
+      
+      // Compare lengths (more entries means longer content)
+      if (newRssContent.length > existingContent.length) {
+        console.log('New RSS feed is longer, will update');
+        shouldUpdate = true;
+      } else {
+        console.log('New RSS feed is not longer, skipping update');
+      }
+    } catch (error) {
+      console.log('No existing RSS feed found in GCS, will create new one');
+      shouldUpdate = true;
+    }
+
+    // Update if needed
+    if (shouldUpdate) {
+      console.log('Uploading new RSS feed...');
+      fs.writeFileSync(RSS_OUTPUT_PATH, newRssContent);
+      await uploadToGCS(GCS_BUCKET_NAME, RSS_OUTPUT_PATH, GCS_RSS_PATH);
+      console.log('New RSS feed uploaded successfully');
+    }
+  } catch (error) {
+    console.error('Error updating RSS feed:', error);
+  }
 }
 
 async function processAddressBlocks(addressBlocks: BlockAddress[], config: NetworkConfig) {
@@ -102,7 +139,10 @@ async function main() {
       })
     ]);
 
-    console.log('Finished processing specific blocks');
+    // After processing blocks, update RSS feed if it's longer
+    await updateRSSFeedIfLonger();
+
+    console.log('Finished processing specific blocks and updating RSS feed');
   } catch (error) {
     console.error('Failed to process blocks:', error);
     process.exit(1);

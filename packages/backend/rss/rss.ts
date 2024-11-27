@@ -1,9 +1,12 @@
 import RSS from "rss";
 import { ethers } from "ethers";
+import { uploadToGCS } from "~/shared";
 import fs from 'fs';
 import path from 'path';
 
 const RSS_FILE_PATH = path.join(__dirname, '../data/rss-feed.json');
+const RSS_OUTPUT_PATH = path.join(__dirname, '../data/feed.xml');
+const RSS_EVENTS_PATH = path.join(__dirname, '../data/rss-feed-events.json');
 
 // Ensure directory exists
 const ensureDirectoryExists = (filePath: string) => {
@@ -73,7 +76,6 @@ const saveFeedToFile = () => {
   fs.writeFileSync(RSS_FILE_PATH, JSON.stringify(items, null, 2));
 };
 
-// Function to format and add an event as an RSS item
 export const addEventToRSS = (
   address: string, 
   eventName: string, 
@@ -123,3 +125,58 @@ export const addEventToRSS = (
   feed.item(newItem);
   saveFeedToFile();
 };
+
+export const generateRss = () => {
+  try {
+    
+    // Ensure output directory exists
+    const dir = path.dirname(RSS_OUTPUT_PATH);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    // Check if RSS feed file already exists
+    if (fs.existsSync(RSS_OUTPUT_PATH)) {
+      console.log('Existing RSS feed found. Returning it.');
+      const existingContent = fs.readFileSync(RSS_OUTPUT_PATH, 'utf8');
+      uploadToGCS('zksync-rss', RSS_OUTPUT_PATH, 'rss/feed.xml', existingContent)
+          .then(() => console.log('RSS feed uploaded to GCS successfully'))
+          .catch((uploadError) => console.error('Failed to upload RSS feed to GCS:', uploadError));
+
+      return existingContent;
+    }
+
+
+    console.log('No existing RSS feed found. Generating new feed...');
+
+
+    if (!fs.existsSync(RSS_EVENTS_PATH)) {
+        console.warn('No RSS events file found. Creating empty RSS feed.');
+    } else {
+      try {
+        const eventsData = JSON.parse(fs.readFileSync(RSS_EVENTS_PATH, 'utf8'));
+        
+        if (!Array.isArray(eventsData)) {
+            throw new Error('RSS events data is not in the expected format');
+        }
+
+        console.log(`Found ${eventsData.length} events to include in RSS feed`);
+      } catch (parseError) {
+        console.error('Error parsing RSS events file:', parseError);
+        throw parseError;
+      }
+    }
+
+    const rssContent = feed.xml({ indent: true });
+    fs.writeFileSync(RSS_OUTPUT_PATH, rssContent);
+    const data = JSON.stringify(rssContent, null, 2);
+    uploadToGCS('your-bucket-name', data, 'rss/feed.json')
+        .then(() => console.log('RSS feed uploaded to GCS successfully'))
+        .catch((uploadError) => console.error('Failed to upload RSS feed to GCS:', uploadError));
+
+      return rssContent;
+  } catch (error) {
+    console.error('Failed to generate RSS feed:', error);
+    throw error;
+  }
+}

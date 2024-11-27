@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
-import { getGovBodyFromAddress, UnifiedMinimalABI, EventsMapping, getCategory } from "../constants";
-import { ParsedEvent } from "./interfaces";
+import { UnifiedMinimalABI, EventsMapping, ParsedEvent, getCategory, getGovBodyFromAddress } from "~/shared";
 
 export const monitorEventsAtBlock = async (
   blocknumber: number,
@@ -64,12 +63,12 @@ export const monitorEventsAtBlock = async (
           })
           .catch((err) => {
             const errorMessage = `
-🚨 CRITICAL ERROR PROCESSING EVENT 🚨
-Block: ${blocknumber}
-Contract: ${address}
-Event: ${eventName}
-Error: ${err.message}
-${err.stack}
+                🚨 CRITICAL ERROR PROCESSING EVENT 🚨
+                Block: ${blocknumber}
+                Contract: ${address}
+                Event: ${eventName}
+                Error: ${err.message}
+                ${err.stack}
             `;
             console.error(errorMessage);
             throw new Error(errorMessage);
