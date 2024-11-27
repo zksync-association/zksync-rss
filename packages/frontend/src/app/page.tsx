@@ -22,13 +22,25 @@ interface FeedMetadata {
   language?: string;
 }
 
-async function getFeed(): Promise<{ metadata: FeedMetadata; items: FeedItem[] }> {
+interface Feed {
+  metadata: FeedMetadata;
+  items: FeedItem[];
+}
+
+async function getFeed(): Promise<Feed> {
   const response = await fetch('http://localhost:3001/rss', {
     next: { revalidate: 60 }
   });
   
   if (!response.ok) {
-    throw new Error('Failed to fetch RSS feed');
+    return {
+      metadata: {
+        title: 'Feed Not Found',
+        description: 'The RSS feed could not be loaded at this time.',
+        link: '',
+      },
+      items: []
+    };
   }
 
   const data = await response.text();
@@ -64,6 +76,21 @@ async function getFeed(): Promise<{ metadata: FeedMetadata; items: FeedItem[] }>
 export default async function Home() {
   const { metadata, items } = await getFeed();
   
+  if (metadata.title === 'Feed Not Found') {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Card className="w-96 border border-slate-800 bg-slate-950">
+          <CardHeader>
+            <CardTitle className="text-red-400">{metadata.title}</CardTitle>
+            <CardDescription className="text-slate-400">
+              {metadata.description}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-900">
       <main className="container mx-auto py-8 px-4 max-w-4xl">
@@ -91,7 +118,7 @@ export default async function Home() {
 
         <div className="space-y-6">
           {items.map((item, index) => (
-            <div key={item.guid || index}>
+            <div key={`${item.guid}-${index}`}>
               <Card className="overflow-hidden border border-slate-800 bg-slate-950 shadow-lg">
                 <CardHeader className="border-b border-slate-800">
                   <CardTitle className="text-xl">
