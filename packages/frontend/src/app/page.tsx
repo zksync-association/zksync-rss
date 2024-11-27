@@ -26,11 +26,52 @@ interface Feed {
 }
 
 async function getFeed(): Promise<Feed> {
-  const response = await fetch('http://localhost:3001/rss', {
-    next: { revalidate: 60 }
-  });
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   
-  if (!response.ok) {
+  if (!apiUrl) {
+    return {
+      metadata: {
+        title: 'Configuration Error',
+        description: 'The API URL has not been configured. Please set NEXT_PUBLIC_API_URL environment variable.',
+        link: '',
+      },
+      items: []
+    };
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/rss`, {
+      next: { revalidate: 60 }
+    });
+    const data = await response.text();
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      parseAttributeValue: true
+    });
+    
+    const result = parser.parse(data);
+    const channel = result.rss.channel;
+    const items = channel.item;
+
+    return {
+      metadata: {
+        title: channel.title || '',
+        description: channel.description || '',
+        link: channel.link || '',
+        lastBuildDate: channel.lastBuildDate || '',
+        language: channel.language || 'en'
+      },
+      items: (Array.isArray(items) ? items : [items]).map(item => ({
+        title: item.title || '',
+        description: item.description || '',
+        url: item.link || '',
+        guid: item.guid || '',
+        categories: Array.isArray(item.category) ? item.category : item.category ? [item.category] : [],
+        author: item.author || '',
+        date: item.pubDate || new Date().toISOString()
+      }))
+    };
+  } catch (e) {
     return {
       metadata: {
         title: 'Feed Not Found',
@@ -40,35 +81,6 @@ async function getFeed(): Promise<Feed> {
       items: []
     };
   }
-
-  const data = await response.text();
-  const parser = new XMLParser({
-    ignoreAttributes: false,
-    parseAttributeValue: true
-  });
-  
-  const result = parser.parse(data);
-  const channel = result.rss.channel;
-  const items = channel.item;
-
-  return {
-    metadata: {
-      title: channel.title || '',
-      description: channel.description || '',
-      link: channel.link || '',
-      lastBuildDate: channel.lastBuildDate || '',
-      language: channel.language || 'en'
-    },
-    items: (Array.isArray(items) ? items : [items]).map(item => ({
-      title: item.title || '',
-      description: item.description || '',
-      url: item.link || '',
-      guid: item.guid || '',
-      categories: Array.isArray(item.category) ? item.category : item.category ? [item.category] : [],
-      author: item.author || '',
-      date: item.pubDate || new Date().toISOString()
-    }))
-  };
 }
 
 export default async function Home() {
