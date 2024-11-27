@@ -1,7 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { Suspense } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 
 interface FeedItem {
@@ -75,7 +73,7 @@ async function getFeed(): Promise<Feed> {
 
 export default async function Home() {
   const { metadata, items } = await getFeed();
-  
+
   if (metadata.title === 'Feed Not Found') {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
