@@ -15,6 +15,11 @@ A service that monitors ZKSync and Ethereum networks for governance events and g
 1. Clone the repository
 2. Install dependencies
 3. Create `.env` file in `packages/backend` with:
+4. Create a GCP storage bucket with the following folders: archive, data, rss
+5. Create a key.json in gcp for permissions to write to the folders
+6. store key.json in ./packages/backend/
+7. Run ```npm run process-historic-blocks``` to setup the feed
+8. Setup a cron-job to run npm run process-blocks every x minutes
 
 ## Available Scripts
 

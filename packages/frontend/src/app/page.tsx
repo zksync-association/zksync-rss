@@ -26,7 +26,8 @@ interface Feed {
 }
 
 async function getFeed(): Promise<Feed> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  // Public link to rss file in gcp
+  const apiUrl = process.env.NEXT_PUBLIC_RSS_FILE;
   
   if (!apiUrl) {
     return {
@@ -40,7 +41,7 @@ async function getFeed(): Promise<Feed> {
   }
 
   try {
-    const response = await fetch(`${apiUrl}/rss`, {
+    const response = await fetch(`${apiUrl}`, {
       next: { revalidate: 60 }
     });
     const data = await response.text();
@@ -52,7 +53,6 @@ async function getFeed(): Promise<Feed> {
     const result = parser.parse(data);
     const channel = result.rss.channel;
     const items = channel.item;
-
     return {
       metadata: {
         title: channel.title || '',
@@ -61,16 +61,19 @@ async function getFeed(): Promise<Feed> {
         lastBuildDate: channel.lastBuildDate || '',
         language: channel.language || 'en'
       },
-      items: (Array.isArray(items) ? items : [items]).map(item => ({
+      items: (Array.isArray(items) ? items : [items])
+      .map(item => ({
         title: item.title || '',
         description: item.description || '',
         url: item.link || '',
         guid: item.guid || '',
         categories: Array.isArray(item.category) ? item.category : item.category ? [item.category] : [],
-        author: item.author || '',
+        author: item['dc:creator'],
         date: item.pubDate || new Date().toISOString()
       }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Sort by date, newest first
     };
+
   } catch (e) {
     return {
       metadata: {
@@ -83,9 +86,59 @@ async function getFeed(): Promise<Feed> {
   }
 }
 
+const RenderDescription = ({ description }: { description: string }) => {
+  try {
+    const data = JSON.parse(description);
+    
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Event Details</h3>
+          <ul className="space-y-1">
+            <li>Network: {data.eventDetails.network}</li>
+            <li>Chain ID: {data.eventDetails.chainId}</li>
+            <li>Block: {data.eventDetails.block}</li>
+            <li>Timestamp: {data.eventDetails.timestamp}</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Governance Info</h3>
+          <ul className="space-y-1">
+            <li>Governance Body: {data.governanceInfo.governanceBody}</li>
+            <li>Event Type: {data.governanceInfo.eventType}</li>
+            <li>Contract Address: {data.governanceInfo.contractAddress}</li>
+            {data.governanceInfo.proposalLink && (
+              <li>
+                Proposal Link:{' '}
+                <a 
+                  href={data.governanceInfo.proposalLink}
+                  className="text-blue-400 hover:text-blue-300"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Proposal
+                </a>
+              </li>
+            )}
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Event Data</h3>
+          <pre className="bg-slate-900 p-4 rounded-lg overflow-x-auto">
+            {JSON.stringify(data.eventData, null, 2)}
+          </pre>
+        </div>
+      </div>
+    );
+  } catch (e) {
+    return <div className="text-red-400">Invalid description format</div>;
+  }
+};
+
 export default async function Home() {
   const { metadata, items } = await getFeed();
-
   if (metadata.title === 'Feed Not Found') {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -147,22 +200,9 @@ export default async function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
-                  <div 
-                    className="prose prose-sm prose-invert max-w-none prose-p:text-slate-300 prose-a:text-blue-400"
-                    dangerouslySetInnerHTML={{ __html: item.description }}
-                  />
-                  {item.categories && item.categories.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2" >
-                      {item.categories.map((category, i) => (
-                        <span 
-                          key={`item-${i}`}
-                          className="px-3 py-1 rounded-full text-xs bg-slate-800 text-slate-200"
-                        >
-                          {category}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <div className="prose prose-sm prose-invert max-w-none prose-p:text-slate-300 prose-a:text-blue-400">
+                    <RenderDescription description={item.description} />
+                  </div>
                 </CardContent>
               </Card>
               {index < items.length - 1 && (

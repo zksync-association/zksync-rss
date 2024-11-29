@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { NetworkConfig } from "./types";
 
 export const GCS_RSS_PATH = 'rss/feed.xml';
+export const GCS_ARCHIVE_PATH = 'archive/'
 export const GCS_BUCKET_NAME = 'zksync-rss';
 export const GCS_STATE_FILE_PATH = 'data/processing-state.json'; // Path in GCS
 
@@ -95,7 +96,6 @@ export const EventsMapping = {
     ],
   },
 };
-
 
 export const UnifiedMinimalABI = [
   // Events related to governance roles and changes

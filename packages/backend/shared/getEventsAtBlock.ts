@@ -89,16 +89,21 @@ export const monitorEventsAtBlock = async (
         if (!event?.interface) {
           throw new Error(`🚨 Invalid event data at block ${blocknumber}`);
         }
-
+        const ETHEREUM_ADDRESSES = [
+          '0x8f7a9912416e8adc4d9c21fae1415d3318a11897'  // Protocol Upgrade Handler
+        ];
+        const isEthereum = ETHEREUM_ADDRESSES.includes(event.address.toLowerCase());
+        const link = isEthereum ? 
+          `https://etherscan.io/tx/${event.txhash}` :
+          `https://explorer.zksync.io/tx/${event.txhash}`;
+          const networkName = isEthereum ? 'Ethereum Mainnet' : 'ZKSync Era';        
+          const chainId = isEthereum ? '1' : '324';
         return {
           interface: event.interface,
           rawData: event.rawData,
           decodedData: event.decodedData,
-          description: '',
           title: `${event.eventName} - ${getGovBodyFromAddress(event.address)}`,
-          link: event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 
-            `https://etherscan.io/tx/${event.txhash}` :
-            `https://explorer.zksync.io/tx/${event.txhash}`,
+          link,
           txhash: event.txhash,
           eventName: event.eventName,
           blocknumber: event.blocknumber,
@@ -110,8 +115,8 @@ export const monitorEventsAtBlock = async (
             `https://vote.zknation.io/dao/proposal/${event.args.proposalId}?govId=eip155:${
               event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? '1' : '324'
             }:${event.address}` : '',
-          networkName: event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? 'Ethereum Mainnet' : 'ZKSync Era',
-          chainId: event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? '1' : '324'
+          networkName,
+          chainId,
         };
       });
     });

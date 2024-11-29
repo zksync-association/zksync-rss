@@ -1,12 +1,10 @@
 import { ethers } from 'ethers';
-import { convertBigIntToString, EventsMapping, NetworkConfig, monitorEventsAtBlock, downloadFromGCS, uploadToGCS, GCS_BUCKET_NAME, GCS_RSS_PATH } from "~/shared";
-import { addEventToRSS, generateRss } from "~/rss/rss";
-import fs from 'fs';
+import { convertBigIntToString, EventsMapping, NetworkConfig, monitorEventsAtBlock } from "~/shared";
+import { addEventToRSS, updateRSSFeed } from "~/rss/utils";
 import dotenv from 'dotenv';
 import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
-const RSS_OUTPUT_PATH = path.join(__dirname, '../data/feed.xml');
 
 interface BlockAddress {
   address: string;
@@ -14,40 +12,8 @@ interface BlockAddress {
 }
 
 async function updateRSSFeedIfLonger() {
-  try {
-    // Generate new RSS feed
-    const newRssContent = generateRss();
-    
-    // Try to download existing RSS feed from GCS
-    let existingContent = '';
-    let shouldUpdate = false;
-    
-    try {
-      await downloadFromGCS(GCS_BUCKET_NAME, GCS_RSS_PATH, RSS_OUTPUT_PATH);
-      existingContent = fs.readFileSync(RSS_OUTPUT_PATH, 'utf8');
-      
-      // Compare lengths (more entries means longer content)
-      if (newRssContent.length > existingContent.length) {
-        console.log('New RSS feed is longer, will update');
-        shouldUpdate = true;
-      } else {
-        console.log('New RSS feed is not longer, skipping update');
-      }
-    } catch (error) {
-      console.log('No existing RSS feed found in GCS, will create new one');
-      shouldUpdate = true;
-    }
-
-    // Update if needed
-    if (shouldUpdate) {
-      console.log('Uploading new RSS feed...');
-      fs.writeFileSync(RSS_OUTPUT_PATH, newRssContent);
-      await uploadToGCS(GCS_BUCKET_NAME, RSS_OUTPUT_PATH, GCS_RSS_PATH);
-      console.log('New RSS feed uploaded successfully');
-    }
-  } catch (error) {
-    console.error('Error updating RSS feed:', error);
-  }
+  const updated = await updateRSSFeed();
+  console.log(updated ? 'RSS feed updated' : 'RSS feed unchanged');
 }
 
 async function processAddressBlocks(addressBlocks: BlockAddress[], config: NetworkConfig) {
@@ -97,7 +63,7 @@ async function processAddressBlocks(addressBlocks: BlockAddress[], config: Netwo
   }
 }
 
-async function main() {
+async function processHistoricEvents() {
   try {
     const ethereumProvider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
     const zksyncProvider = new ethers.JsonRpcProvider(process.env.ZKSYNC_RPC_URL);
@@ -105,7 +71,7 @@ async function main() {
     const zkSyncAddressBlocks: BlockAddress[] = [
       {address: "0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6", blocks: [49089754, 48849940, 41197322, 41197320, 41197318, 41197315, 41197308]},
       {address: "0x10560f8B7eE37571AD7E3702EEb12Bc422036E89", blocks: [48849940, 49089754]},
-      {address: "0x76705327e682F2d96943280D99464Ab61219e34f", blocks: [49077771, 49079668, 49254234]},
+      {address: "0x76705327e682F2d96943280D99464Ab61219e34f", blocks: [49772158, 49077771, 49079668, 49254234]},
       {address: "0x3701fB675bCd4A85eb11A2467628BBe193F6e6A8", blocks: [41196846]},
       {address: "0xC3e970cB015B5FC36edDf293D2370ef5D00F7a19", blocks: [41197426, 41197433, 41197435, 41197437, 41197439]},
       {address: "0x10560f8B7eE37571AD7E3702EEb12Bc422036E89", blocks: [41197311]},
@@ -160,4 +126,4 @@ process.on('unhandledRejection', (error) => {
   process.exit(1);
 });
 
-main();
+processHistoricEvents();
