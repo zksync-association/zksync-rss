@@ -126,7 +126,7 @@ const RenderDescription = ({ description }: { description: string }) => {
 
         <div>
           <h3 className="text-lg font-semibold mb-2">Event Data</h3>
-          <pre className="bg-slate-900 p-4 rounded-lg overflow-x-auto">
+          <pre className="bg-neutral-900 p-4 rounded-lg overflow-x-auto">
             {JSON.stringify(data.eventData, null, 2)}
           </pre>
         </div>
@@ -155,7 +155,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-black">
       <main className="container mx-auto py-8 px-4 max-w-4xl">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold mb-4 text-white">{metadata.title}</h1>
@@ -182,8 +182,8 @@ export default async function Home() {
         <div className="space-y-6">
           {items.map((item, index) => (
             <div key={`${item.guid}-${index}`}>
-              <Card className="overflow-hidden border border-slate-800 bg-slate-950 shadow-lg">
-                <CardHeader className="border-b border-slate-800">
+              <Card className="overflow-hidden border border-neutral-800 bg-black shadow-lg">
+                <CardHeader className="border-b border-neutral-800">
                   <CardTitle className="text-xl">
                     <a 
                       href={item.url} 
@@ -206,7 +206,7 @@ export default async function Home() {
                 </CardContent>
               </Card>
               {index < items.length - 1 && (
-                <Separator className="my-6 bg-slate-800" />
+                <Separator className="my-6 bg-neutral-800" />
               )}
             </div>
           ))}
