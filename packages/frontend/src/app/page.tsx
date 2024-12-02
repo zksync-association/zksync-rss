@@ -126,7 +126,7 @@ const RenderDescription = ({ description }: { description: string }) => {
 
         <div>
           <h3 className="text-lg font-semibold mb-2">Event Data</h3>
-          <pre className="bg-neutral-900 p-4 rounded-lg overflow-x-auto">
+          <pre className="bg-neutral-950 p-4 rounded-lg overflow-x-auto">
             {JSON.stringify(data.eventData, null, 2)}
           </pre>
         </div>
