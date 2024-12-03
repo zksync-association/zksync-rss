@@ -113,7 +113,7 @@ const RenderDescription = ({ description }: { description: string }) => {
                 Proposal Link:{' '}
                 <a 
                   href={data.governanceInfo.proposalLink}
-                  className="text-blue-400 hover:text-blue-300"
+                  className="text-white hover:text-white underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -171,7 +171,8 @@ export default async function Home() {
                 href={metadata.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-neutral-300 hover:text-white underline"
+
               >
                 View Source
               </a>
@@ -189,7 +190,7 @@ export default async function Home() {
                       href={item.url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 transition-colors"
+                      className="text-neutral-300 hover:text-white underline transition-colors inline-flex items-center gap-1"
                     >
                       {item.title}
                     </a>
@@ -200,7 +201,7 @@ export default async function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
-                  <div className="prose prose-sm prose-invert max-w-none prose-p:text-slate-300 prose-a:text-blue-400">
+                  <div className="prose prose-sm prose-invert max-w-none prose-p:text-slate-300 prose-a:text-neutral-300 prose-a:hover:text-white">
                     <RenderDescription description={item.description} />
                   </div>
                 </CardContent>
