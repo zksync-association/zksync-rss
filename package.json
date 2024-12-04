@@ -16,5 +16,9 @@
   },
   "devDependencies": {
     "tsconfig-paths": "^4.2.0"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.14.0",
+    "rss-parser": "^3.13.0"
   }
 }

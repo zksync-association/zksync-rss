@@ -38,7 +38,7 @@ async function processAddressBlocks(addressBlocks: BlockAddress[], config: Netwo
           console.log(`Found ${events.length} events at block ${blockNumber}`);
           
           for (const event of events) {
-            await addEventToRSS(
+            addEventToRSS(
               event.address,
               event.eventName,
               event.topics,
@@ -105,7 +105,6 @@ async function processHistoricEvents() {
       })
     ]);
 
-    // After processing blocks, update RSS feed if it's longer
     await updateRSSFeedIfLonger();
 
     console.log('Finished processing specific blocks and updating RSS feed');

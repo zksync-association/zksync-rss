@@ -6,6 +6,9 @@ export const GCS_ARCHIVE_PATH = 'archive/'
 export const GCS_BUCKET_NAME = 'zksync-rss';
 export const GCS_STATE_FILE_PATH = 'data/processing-state.json'; // Path in GCS
 
+export const ARCHIVE_ITEM_THRESHOLD = 10;
+export const ARCHIVE_ITEM_LIMIT = 10;
+
 export const EventsMapping = {
   "ZKsync Network": {
     "0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E": [

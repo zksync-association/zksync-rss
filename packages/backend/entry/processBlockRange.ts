@@ -151,15 +151,32 @@ async function processLatestBlocks() {
       zksyncProvider.getBlockNumber()
     ]);
 
-    let stateData: Record<string, ProcessingState> = {};
+    let stateData: Record<string, ProcessingState> = {
+      ethereum: {
+        lastProcessedBlock: ethereumCurrentBlock - 100,
+        hasError: false,
+        lastUpdated: new Date().toISOString()
+      },
+      zksync: {
+        lastProcessedBlock: zksyncCurrentBlock - 100,
+        hasError: false,
+        lastUpdated: new Date().toISOString()
+      }
+    };
+    
     if (fs.existsSync(STATE_FILE_PATH)) {
-      stateData = JSON.parse(fs.readFileSync(STATE_FILE_PATH, 'utf8'));
+      try {
+        const fileContent = fs.readFileSync(STATE_FILE_PATH, 'utf8');
+        console.log('State file content:', fileContent);
+        stateData = JSON.parse(fileContent);
+      } catch (error) {
+        console.error('Error parsing state file:', error);
+      }
     }
 
-    const ethereumStartBlock = (stateData.ethereum?.lastProcessedBlock ?? ethereumCurrentBlock - 100) + 1;
-    const zksyncStartBlock = (stateData.zksync?.lastProcessedBlock ?? zksyncCurrentBlock - 100) + 1;
-    // const zksyncStartBlock = 49089750;
-    // Process both networks
+    const ethereumStartBlock = (stateData["Ethereum Mainnet"]?.lastProcessedBlock ?? ethereumCurrentBlock - 100) + 1;
+    const zksyncStartBlock = (stateData["ZKSync"]?.lastProcessedBlock ?? zksyncCurrentBlock - 100) + 1;
+
     const [ethereumFoundEvents, zksyncFoundEvents] = await Promise.all([
       processBlockRangeForNetwork(
         {
@@ -189,13 +206,12 @@ async function processLatestBlocks() {
       )
     ]);
 
-    // If any network found events, update the RSS feed
+    await uploadStateFile();
+
     if (ethereumFoundEvents || zksyncFoundEvents) {
       const updated = await updateRSSFeed();
       console.log(updated ? 'RSS feed updated' : 'RSS feed unchanged');
     }
-
-    await uploadStateFile();
 
     console.log('Successfully processed all blocks');
 

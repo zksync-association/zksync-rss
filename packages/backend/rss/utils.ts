@@ -1,9 +1,11 @@
 import RSS, { ItemOptions } from "rss";
 import { ethers } from "ethers";
-import { uploadToGCS, GCS_BUCKET_NAME, GCS_RSS_PATH, GCS_ARCHIVE_PATH } from "~/shared";
+import { uploadToGCS, GCS_BUCKET_NAME, GCS_RSS_PATH, GCS_ARCHIVE_PATH, ARCHIVE_ITEM_THRESHOLD, ARCHIVE_ITEM_LIMIT } from "~/shared";
+import { Storage } from '@google-cloud/storage';
+import Parser from 'rss-parser';
 import fs from 'fs';
 import path from 'path';
-// Simplified configuration
+
 const CONFIG = {
   filePaths: {
     data: path.join(__dirname, '../data/rss-feed.json'),
@@ -22,7 +24,6 @@ const CONFIG = {
   }
 };
 
-// Simplified feed management
 class RSSFeedManager {
   private feed: RSS;
 
@@ -42,6 +43,8 @@ class RSSFeedManager {
           return dateB - dateA; // Sort in descending order (newest first)
         });
       items.forEach((item: RSS.ItemOptions) => this.feed.item(item));
+      // Delete the RSS feed data file after successful loading
+      fs.unlinkSync(CONFIG.filePaths.data);
     } catch (error) {
       console.error('Error loading RSS feed:', error);
     }
@@ -121,17 +124,27 @@ class RSSFeedManager {
 }
 
 async upload(feed: RSS): Promise<boolean> {
-    try {
-        const rssContent = feed.xml({ indent: true });
-        fs.mkdirSync(path.dirname(CONFIG.filePaths.output), { recursive: true });
-        fs.writeFileSync(CONFIG.filePaths.output, rssContent);
-        await uploadToGCS(GCS_BUCKET_NAME, CONFIG.filePaths.output, GCS_RSS_PATH, rssContent);
-        return true;
-    } catch (error) {
-        console.error('Failed to upload RSS feed:', error);
-        return false;
-    }
+  try {
+      const rssContent = feed.xml({ indent: true });
+      fs.mkdirSync(path.dirname(CONFIG.filePaths.output), { recursive: true });
+      fs.writeFileSync(CONFIG.filePaths.output, rssContent);
+      await uploadToGCS(GCS_BUCKET_NAME, CONFIG.filePaths.output, GCS_RSS_PATH, rssContent);
+      
+      // Clean up local files
+      if (fs.existsSync(CONFIG.filePaths.output)) {
+          fs.unlinkSync(CONFIG.filePaths.output);
+      }
+      if (fs.existsSync(CONFIG.filePaths.data)) {
+          fs.unlinkSync(CONFIG.filePaths.data);
+      }
+      
+      return true;
+  } catch (error) {
+      console.error('Failed to upload RSS feed:', error);
+      return false;
+  }
 }
+
 
 async generateAndUpload(): Promise<boolean> {
     try {
@@ -144,10 +157,9 @@ async generateAndUpload(): Promise<boolean> {
 }
 }
 
-// Create single instance
+
 const feedManager = new RSSFeedManager();
 
-// Simplified exports
 export const addEventToRSS = (
   address: string, 
   eventName: string, 
@@ -166,75 +178,111 @@ export const addEventToRSS = (
   chainId, block, govBody, proposalLink, timestamp, eventArgs
 });
 
-function deduplicateItems(items: ItemOptions[]) {
-  const seen = new Set();
-  return items.filter(item => {
-    const uniqueId = item.guid || item.title + item.date;
-    if (seen.has(uniqueId)) {
-      return false;
-    }
-    seen.add(uniqueId);
-    return true;
-  });
-}
-
 
 export const updateRSSFeed = async () => {
-  const archiveThreshold = 100;
+
   const feed = await feedManager.generate();
   const items = (feed as any).items;
+  
 
-  if (items.length > archiveThreshold) {
-    // Deduplicate items
-    const deduplicateItems = (items: ItemOptions[]) => {
-      const seen = new Set();
-      return items.filter(item => {
-        const uniqueId = item.guid || item.title + item.date;
-        if (seen.has(uniqueId)) return false;
-        seen.add(uniqueId);
-        return true;
-      });
-    };
+  const archivesDir = path.join(__dirname, '../data/archives');
+  fs.mkdirSync(archivesDir, { recursive: true });
 
-    // Create archive with older items
-    const itemsToArchive = deduplicateItems(items.slice(archiveThreshold));
-    const archiveFeed = new RSS(CONFIG.feed);
-    itemsToArchive.forEach((item: ItemOptions) => archiveFeed.item(item));
-
-    // Create archive filename using first and last archived items
-    const oldestDate = new Date(itemsToArchive[itemsToArchive.length - 1]?.date || new Date());
-    const newestDate = new Date(itemsToArchive[0]?.date || new Date());
-    const archiveFileName = `${oldestDate.toISOString().split('T')[0]}-${newestDate.toISOString().split('T')[0]}-rss.xml`;
-
-    // Upload archive
-    const archiveContent = archiveFeed.xml();
-    const localArchivePath = path.join(__dirname, '../data/archives', archiveFileName);
-    await uploadToGCS(
-      GCS_BUCKET_NAME,
-      localArchivePath,
-      `${GCS_ARCHIVE_PATH}${archiveFileName}`,
-      archiveContent
-    );
-
-    if (fs.existsSync(localArchivePath)) {
+  const archivedItems = await downloadArchives(archivesDir);
+  
+  if (items.length > ARCHIVE_ITEM_THRESHOLD) {
+    const itemsToArchive = items.slice(ARCHIVE_ITEM_THRESHOLD);
+    
+    const allArchivedItems = [...archivedItems, ...itemsToArchive].sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+    
+    for (let i = 0; i < allArchivedItems.length; i += ARCHIVE_ITEM_LIMIT) {
+      const archiveItems = allArchivedItems.slice(i, i + ARCHIVE_ITEM_LIMIT);
+      const archiveFeed = new RSS(CONFIG.feed);
+      archiveItems.forEach(item => archiveFeed.item(item));
+      
+      const oldestDate = new Date(archiveItems[archiveItems.length - 1].date);
+      const newestDate = new Date(archiveItems[0].date);
+      const timestamp = Date.now();
+      const archiveFileName = `archive-${oldestDate.toISOString().split('T')[0]}-${newestDate.toISOString().split('T')[0]}-${timestamp}.xml`;
+      
+      const archiveContent = archiveFeed.xml();
+      const localArchivePath = path.join(archivesDir, archiveFileName);
+      
+      fs.writeFileSync(localArchivePath, archiveContent);
+      await uploadToGCS(
+        GCS_BUCKET_NAME,
+        localArchivePath,
+        `${GCS_ARCHIVE_PATH}${archiveFileName}`,
+        archiveContent
+      );
+      
       fs.unlinkSync(localArchivePath);
     }
-
+    
     // Create new feed with only recent items
-    const recentItems = deduplicateItems(items.slice(0, archiveThreshold));
+    const recentItems = items.slice(0, ARCHIVE_ITEM_THRESHOLD);
     const newFeed = new RSS(CONFIG.feed);
     recentItems.forEach((item: ItemOptions) => newFeed.item(item));
-
-    // Upload the new feed
+    
     await feedManager.upload(newFeed);
-    return true;
+  } else {
+    await feedManager.upload(feed);
   }
-
-  // Upload the original feed if no archiving needed
-  const deduplicatedItems = deduplicateItems(items);
-  const deduplicatedFeed = new RSS(CONFIG.feed);
-  deduplicatedItems.forEach(item => deduplicatedFeed.item(item));
-
-  await feedManager.upload(deduplicatedFeed);
+  
+  // Clean up the data directory
+  const dataDir = path.join(__dirname, '../data');
+  if (fs.existsSync(dataDir)) {
+    fs.rmSync(dataDir, { recursive: true, force: true });
+  }
+  
   return true;
 };
+
+
+async function downloadArchives(archivesDir: string): Promise<ItemOptions[]> {
+  try {
+    const storage = new Storage(); 
+    const bucket = storage.bucket(GCS_BUCKET_NAME); 
+    const [files] = await bucket.getFiles({ prefix: GCS_ARCHIVE_PATH });
+    
+    // Sort files by their timestamp in filename (newest first)
+    const sortedFiles = files.sort((a, b) => {
+      const timestampA = parseInt(a.name.split('-').pop()?.replace('.xml', '') || '0');
+      const timestampB = parseInt(b.name.split('-').pop()?.replace('.xml', '') || '0');
+      return timestampB - timestampA;
+    });
+    
+    let archivedItems: ItemOptions[] = [];
+    
+    for (const file of sortedFiles) {
+      const localPath = path.join(archivesDir, path.basename(file.name));
+      await file.download({ destination: localPath });
+      
+      const content = fs.readFileSync(localPath, 'utf-8');
+      const parser = new Parser();
+      const result = await parser.parseString(content);
+      
+      const parsedItems = result.items.map((item: any) => ({
+        title: item.title,
+        description: item.contentSnippet || item.description,
+        url: item.link,
+        date: item.isoDate || item.pubDate,
+        categories: item.categories || [],
+        author: item.creator || item.author,
+        guid: item.guid || item.id
+      }));
+      
+      archivedItems = [...archivedItems, ...parsedItems];
+      
+      // Clean up downloaded file
+      fs.unlinkSync(localPath);
+    }
+    
+    return archivedItems;
+  } catch (error) {
+    console.error('Error downloading archives:', error);
+    return [];
+  }
+}
