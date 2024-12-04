@@ -25,8 +25,8 @@ interface ProcessingState {
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const STATE_FILE_PATH = path.join(__dirname, '../data/processing-state.json');
-const BATCH_SIZE = 10;
-const BATCH_DELAY = 1000;
+const BATCH_SIZE = 1;
+const BATCH_DELAY = 5000;
 
 async function downloadStateFile() {
   try {
@@ -37,6 +37,7 @@ async function downloadStateFile() {
   }
 }
 
+// Note: when is this uploaded, is there ever the potential for duplicates
 async function uploadStateFile() {
   try {
     await uploadToGCS(GCS_BUCKET_NAME, STATE_FILE_PATH, GCS_STATE_FILE_PATH);
@@ -68,6 +69,7 @@ async function processBlockRangeForNetwork(
 
         if (events.length > 0) {
           foundEvents = true;
+					// Note: When are the events saved to the rss
           events.forEach((event) => {
             addEventToRSS(
               event.address,
@@ -93,6 +95,8 @@ async function processBlockRangeForNetwork(
         });    
       } catch (error) {
         console.error(`Error processing ${config.networkName} block ${blockNumber}:`, error);
+				// Note: Run state can be updated without updating the RSS
+				// meaning we can drop events
         updateState(config.networkName, {
           lastProcessedBlock: blockNumber - 1,
           hasError: true,
@@ -109,6 +113,7 @@ async function processBlockRangeForNetwork(
   return foundEvents;
 }
 
+// Note: Does this append
 function updateState(network: string, state: Partial<ProcessingState>) {
   const dir = path.dirname(STATE_FILE_PATH);
   if (!fs.existsSync(dir)) {
@@ -124,6 +129,8 @@ function updateState(network: string, state: Partial<ProcessingState>) {
     console.warn('Error reading state file, starting fresh:', error);
   }
 
+	// Why destructure here? Do we want to partially update the keys?
+	// Also shouldn't we only update when the block number is higher than the last processed block number
   allStates[network] = {
     ...allStates[network],
     ...state,

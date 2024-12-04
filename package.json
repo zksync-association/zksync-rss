@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "scripts": {
+     "note": "tsx",
     "process-blocks": "NODE_OPTIONS=\"-r tsconfig-paths/register\" TS_NODE_PROJECT=\"./packages/backend/tsconfig.json\" tsx ./packages/backend/entry/processBlockRange.ts",
     "process-historic-blocks": "NODE_OPTIONS=\"-r tsconfig-paths/register\" TS_NODE_PROJECT=\"./packages/backend/tsconfig.json\" tsx ./packages/backend/entry/processHistoricBlocks.ts",
     "frontend": "npm run dev --workspace=@zksync-rss/frontend",

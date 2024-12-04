@@ -147,7 +147,9 @@ async generateAndUpload(): Promise<boolean> {
 // Create single instance
 const feedManager = new RSSFeedManager();
 
+
 // Simplified exports
+// Note: should this be async?
 export const addEventToRSS = (
   address: string, 
   eventName: string, 
@@ -166,6 +168,7 @@ export const addEventToRSS = (
   chainId, block, govBody, proposalLink, timestamp, eventArgs
 });
 
+// Note: this is duplicated
 function deduplicateItems(items: ItemOptions[]) {
   const seen = new Set();
   return items.filter(item => {
@@ -179,6 +182,7 @@ function deduplicateItems(items: ItemOptions[]) {
 }
 
 
+// Note: Are we archiving the feed every time.
 export const updateRSSFeed = async () => {
   const archiveThreshold = 100;
   const feed = await feedManager.generate();
@@ -231,6 +235,7 @@ export const updateRSSFeed = async () => {
   }
 
   // Upload the original feed if no archiving needed
+	// Note: why would we get duplicate items
   const deduplicatedItems = deduplicateItems(items);
   const deduplicatedFeed = new RSS(CONFIG.feed);
   deduplicatedItems.forEach(item => deduplicatedFeed.item(item));

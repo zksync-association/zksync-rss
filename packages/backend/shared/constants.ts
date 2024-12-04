@@ -3,6 +3,8 @@ import { NetworkConfig } from "./types";
 
 export const GCS_RSS_PATH = 'rss/feed.xml';
 export const GCS_ARCHIVE_PATH = 'archive/'
+
+// Test with matter labs bucket scopelift-feed-test-staging-manual
 export const GCS_BUCKET_NAME = 'zksync-rss';
 export const GCS_STATE_FILE_PATH = 'data/processing-state.json'; // Path in GCS
 
