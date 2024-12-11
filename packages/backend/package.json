@@ -1,0 +1,49 @@
+{
+  "name": "@zksync-rss/backend",
+  "version": "0.0.1",
+  "description": "An RSS feed for zksync's governance events",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --ext .ts",
+    "type-check": "tsc --noEmit",
+    "process-blocks": "tsx ./entry/processBlockRange.ts",
+    "process-historic-blocks": "tsx ./entry/processHistoricBlocks.ts",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/rss": "^0.0.32",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint": "^8.57.1",
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.14.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.11.1",
+    "express": "^4.21.1",
+    "rss": "^1.2.2",
+    "ts-node": "^10.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ScopeLift/zksync-rss.git"
+  },
+  "keywords": [
+    "RSS",
+    "Blockchain",
+    "Monitor"
+  ],
+  "author": "Sero - Scopelift",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ScopeLift/zksync-rss/issues"
+  },
+  "homepage": "https://github.com/ScopeLift/zksync-rss#readme"
+}

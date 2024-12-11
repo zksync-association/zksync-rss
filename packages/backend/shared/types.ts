@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 
 export interface NetworkConfig {
   provider: ethers.Provider;
-  eventsMapping: any;
+  eventsMapping: {[contractAddress: string]: string[]};
   networkName: string;
   chainId: number;
   blockExplorerUrl: string;
@@ -23,7 +23,6 @@ export interface ParsedEvent {
   rawData: string;
   decodedData: Record<string, unknown>;
   link: string;
-  description: string;
   proposalLink: string;
 }
 
