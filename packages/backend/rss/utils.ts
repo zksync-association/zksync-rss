@@ -96,7 +96,7 @@ class RSSFeedManager {
   }
 
   private save() {
-    const items = (this.feed as any).items.map((item: any) => ({
+    const items = (this.feed as any).items.map((item: ItemOptions) => ({
       title: item.title,
       description: item.description,
       url: item.url,
@@ -113,7 +113,7 @@ class RSSFeedManager {
   async generate(): Promise<RSS> {
     const sortedFeed = new RSS(CONFIG.feed);
     const items = (this.feed as any).items
-        .sort((a: any, b: any) => {
+        .sort((a: ItemOptions, b: ItemOptions) => {
             const dateA = new Date(a.date).getTime();
             const dateB = new Date(b.date).getTime();
             return dateB - dateA;
