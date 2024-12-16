@@ -18,16 +18,7 @@ export const getGovBodyFromAddress = (address: string): string => {
   return addressMapping[address] || "Unknown Governance Body";
 }
 
-type JsonValue = 
-  | string
-  | number
-  | boolean
-  | null
-  | bigint
-  | JsonValue[]
-  | { [key: string]: JsonValue };
-
-export const convertBigIntToString = (obj: JsonValue): JsonValue => {
+export const convertBigIntToString = (obj: any): any => {
   if (typeof obj === 'bigint') {
     return obj.toString();
   }
@@ -37,7 +28,7 @@ export const convertBigIntToString = (obj: JsonValue): JsonValue => {
   }
   
   if (typeof obj === 'object' && obj !== null) {
-    const newObj: { [key: string]: JsonValue } = {};
+    const newObj: any = {};
     for (const key in obj) {
       newObj[key] = convertBigIntToString(obj[key]);
     }
