@@ -5,13 +5,13 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-export const GCS_RSS_PATH = process.env.GCS_RSS_PATH;
-export const GCS_ARCHIVE_PATH = process.env.GCS_ARCHIVE_PATH
-export const GCS_BUCKET_NAME = process.env.GCS_STATE_FILE_PATH;
-export const GCS_STATE_FILE_PATH = process.env.GCS_STATE_FILE_PATH;
+export const GCS_RSS_PATH = process.env.GCS_RSS_PATH || '';
+export const GCS_ARCHIVE_PATH = process.env.GCS_ARCHIVE_PATH || ''
+export const GCS_BUCKET_NAME = process.env.GCS_STATE_FILE_PATH || '';
+export const GCS_STATE_FILE_PATH = process.env.GCS_STATE_FILE_PATH || '';
 
-export const ARCHIVE_ITEM_THRESHOLD = process.env.ARCHIVE_ITEM_THRESHOLD;
-export const ARCHIVE_ITEM_LIMIT = process.env.ARCHIVE_ITEM_LIMIT;
+export const ARCHIVE_ITEM_THRESHOLD = Number(process.env.ARCHIVE_ITEM_THRESHOLD  || 20);
+export const ARCHIVE_ITEM_LIMIT = Number(process.env.ARCHIVE_ITEM_LIMIT || 100);
 
 export const EventsMapping = {
   "ZKsync Network": {
