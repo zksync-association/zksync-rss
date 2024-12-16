@@ -76,6 +76,7 @@ docker run zksync-rss-backend
 
 ## Notes
 - The initial setup (`process-historic-blocks`) should be run only once when setting up the service
+- New blocks/events can be added to ./packages/backend/entry/processHistoricBlocks in the respective address/chain
 - The recurring process (`process-blocks`) should be scheduled to run at regular intervals
 - Both Docker configurations are available for containerized deployment
 - Ensure proper configuration of GCP credentials and environment variables before running the containers
