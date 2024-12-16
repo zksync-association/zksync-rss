@@ -14,17 +14,14 @@ Configuration
 ```
 ETHEREUM_RPC_URL=your_ethereum_rpc_url
 ZKSYNC_RPC_URL=your_zksync_rpc_url
-GOOGLE_KEY=path/to/your/gcp/key.json
+// GKE workloads compatible, configure in GKE workloads
 ```
 
 ├── entry/                  # Entry point scripts
-│   ├── generateRss.ts     # RSS generation
 │   ├── processBlockRange.ts    # Block range processing
 │   ├── processHistoricBlocks.ts # Historical block processing
-│   └── startConstantMonitoring.ts # Real-time monitoring
-├── monitor/               # Event monitoring logic
 ├── rss/                  # RSS feed generation
 ├── shared/               # Shared utilities
 │   ├── gcp.ts           # Google Cloud Storage utilities
-│   └── rssUtils.ts      # RSS feed utilities
+│   └── types, constants, utils 
 └── data/                # Local data storage

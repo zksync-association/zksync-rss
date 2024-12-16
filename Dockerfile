@@ -1,0 +1,17 @@
+FROM node:22
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY packages/backend/package*.json ./packages/backend/
+
+RUN npm run install:all
+
+COPY . .
+
+RUN npm run build -w @zksync-rss/backend
+
+ENV NODE_OPTIONS="-r tsconfig-paths/register"
+ENV TS_NODE_PROJECT="./packages/backend/tsconfig.json"
+
+CMD ["npm", "run", "process-blocks"]

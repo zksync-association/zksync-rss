@@ -1,13 +1,17 @@
 import { ethers } from "ethers";
 import { NetworkConfig } from "./types";
+import path from 'path';
+import dotenv from 'dotenv';
 
-export const GCS_RSS_PATH = 'rss/feed.xml';
-export const GCS_ARCHIVE_PATH = 'archive/'
-export const GCS_BUCKET_NAME = 'zksync-rss';
-export const GCS_STATE_FILE_PATH = 'data/processing-state.json'; // Path in GCS
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-export const ARCHIVE_ITEM_THRESHOLD = 10;
-export const ARCHIVE_ITEM_LIMIT = 10;
+export const GCS_RSS_PATH = process.env.GCS_RSS_PATH || '';
+export const GCS_ARCHIVE_PATH = process.env.GCS_ARCHIVE_PATH || ''
+export const GCS_BUCKET_NAME = process.env.GCS_BUCKET_NAME || '';
+export const GCS_STATE_FILE_PATH = process.env.GCS_STATE_FILE_PATH || '';
+
+export const ARCHIVE_ITEM_THRESHOLD = Number(process.env.ARCHIVE_ITEM_THRESHOLD  || 50);
+export const ARCHIVE_ITEM_LIMIT = Number(process.env.ARCHIVE_ITEM_LIMIT || 100);
 
 export const EventsMapping = {
   "ZKsync Network": {
@@ -17,6 +21,8 @@ export const EventsMapping = {
         "ProposalExecuted",
         "ProposalCanceled",
         "ProposalCreated",
+        "DelegateChanged",
+        "DelegateVotesChanged",
     ],
     "0x76705327e682F2d96943280D99464Ab61219e34f": [
         "ProposalQueued",
@@ -27,12 +33,21 @@ export const EventsMapping = {
         "ProposalExecuted",
         "ProposalCanceled",
         "ProposalCreated",
+        "CallExecuted",
+        "Cancelled",
+        "TimelockChange",
+        "DelegateVotesChanged",
+        "DelegateChanged",
+        "CallScheduled",
     ],
     "0x3701fB675bCd4A85eb11A2467628BBe193F6e6A8": [
         "RoleAdminChanged",
         "RoleGranted",
         "RoleRevoked",
         "MinDelayChange",
+        "CallScheduled",
+        "CallExecuted",
+        "Cancelled",
     ],
     "0x10560f8B7eE37571AD7E3702EEb12Bc422036E89": [
         "QuorumUpdated",
@@ -47,12 +62,21 @@ export const EventsMapping = {
         "ProposalExecuted",
         "ProposalCanceled",
         "ProposalCreated",
+        "TimelockChange",
+        "DelegateVotesChanged",
+        "DelegateChanged",
+        "CallScheduled",
+        "CallExecuted",
+        "Cancelled",
     ],
     "0x3E21c654B545Bf6236DC08236169DcF13dA4dDd6": [
         "RoleAdminChanged",
         "RoleGranted",
         "RoleRevoked",
         "MinDelayChange",
+        "CallScheduled",
+        "CallExecuted",
+        "Cancelled",
     ],
     "0x496869a7575A1f907D1C5B1eca28e4e9E382afAb": [
         "ProposalExecuted",
@@ -65,6 +89,12 @@ export const EventsMapping = {
         "VotingDelaySet",
         "ProposalQueued",
         "QuorumUpdated",
+        "TimelockChange",
+        "DelegateVotesChanged",
+        "DelegateChanged",
+        "CallScheduled",
+        "CallExecuted",
+        "Cancelled",
     ],
     "0xC3e970cB015B5FC36edDf293D2370ef5D00F7a19": [
         "RoleAdminChanged",
@@ -91,7 +121,6 @@ export const EventsMapping = {
         "EmergencyUpgradeExecuted",
         "SoftFreeze",
         "HardFreeze",
-        "ReinforceFreeze",
         "Unfreeze",
         "ReinforceFreezeOneChain",
         "ReinforceUnfreeze",
@@ -125,13 +154,16 @@ export const UnifiedMinimalABI = [
 
   // Call scheduling and execution events
   "event Cancelled(bytes32 indexed id)",
+  "event CallExecuted(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data)",
+  "event CallScheduled(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data, bytes32 predecessor, uint256 delay)",
 
   // Governance parameter events
   "event MinDelayChange(uint256 oldDuration, uint256 newDuration)",
   "event ProposalExtended(uint256 proposalId, uint64 extendedDeadline)",
   "event LateQuorumVoteExtensionSet(uint64 oldVoteExtension, uint64 newVoteExtension)",
   "event ProposalQueued(bytes32 proposalId)",
-
+  "event TimelockChange(address oldTimelock, address newTimelock)",
+  
   // Role management events
   "event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)",
   "event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)",
@@ -148,6 +180,8 @@ export const UnifiedMinimalABI = [
   "event ProposalExecuted(uint256 proposalId)",
   "event ProposalCanceled(uint256 proposalId)",
   "event IsProposeGuardedToggled(bool oldState, bool newState)",
+  "event DelegateVotesChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance)",
+  "event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate)",
 
   // Governance parameter update events
   "event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum)",
