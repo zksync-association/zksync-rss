@@ -1,13 +1,17 @@
 import { ethers } from "ethers";
 import { NetworkConfig } from "./types";
+import path from 'path';
+import dotenv from 'dotenv';
 
-export const GCS_RSS_PATH = 'rss/feed.xml';
-export const GCS_ARCHIVE_PATH = 'archive/'
-export const GCS_BUCKET_NAME = 'zksync-rss';
-export const GCS_STATE_FILE_PATH = 'data/processing-state.json'; // Path in GCS
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-export const ARCHIVE_ITEM_THRESHOLD = 10;
-export const ARCHIVE_ITEM_LIMIT = 10;
+export const GCS_RSS_PATH = process.env.GCS_RSS_PATH;
+export const GCS_ARCHIVE_PATH = process.env.GCS_ARCHIVE_PATH
+export const GCS_BUCKET_NAME = process.env.GCS_STATE_FILE_PATH;
+export const GCS_STATE_FILE_PATH = process.env.GCS_STATE_FILE_PATH;
+
+export const ARCHIVE_ITEM_THRESHOLD = process.env.ARCHIVE_ITEM_THRESHOLD;
+export const ARCHIVE_ITEM_LIMIT = process.env.ARCHIVE_ITEM_LIMIT;
 
 export const EventsMapping = {
   "ZKsync Network": {

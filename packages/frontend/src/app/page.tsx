@@ -57,7 +57,7 @@ async function getFeed(): Promise<Feed> {
       metadata: {
         title: channel.title || '',
         description: channel.description || '',
-        link: channel.link || '',
+        link: process.env.NEXT_PUBLIC_RSS_FILE || '',
         lastBuildDate: channel.lastBuildDate || '',
         language: channel.language || 'en'
       },
