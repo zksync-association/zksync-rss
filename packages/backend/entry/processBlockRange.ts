@@ -26,7 +26,6 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const STATE_FILE_PATH = path.join(__dirname, '../data/processing-state.json');
 const BATCH_SIZE = 10;
-const BATCH_DELAY = 1000;
 
 async function downloadStateFile() {
   try {
@@ -54,83 +53,51 @@ async function processBlockRangeForNetwork(
 ) {
   console.log(`Processing ${config.networkName} blocks ${startBlock} to ${endBlock}`);
   let foundEvents = false;
-    for (let currentBlock = startBlock; currentBlock <= endBlock; currentBlock += batchSize) {
-      const batchEnd = Math.min(currentBlock + batchSize - 1, endBlock);
-      console.log(`Processing ${config.networkName} batch: ${currentBlock} to ${batchEnd}`);
+  const batches = [];
 
-      for (let blockNumber = currentBlock; blockNumber <= batchEnd; blockNumber++) {
-      try {
-        const events = await monitorEventsAtBlock(
-          blockNumber,
-          config.provider,
-          config.eventsMapping
+  for (let currentBlock = startBlock; currentBlock <= endBlock; currentBlock += batchSize) {
+    const batchEnd = Math.min(currentBlock + batchSize - 1, endBlock);
+    const batchPromises = [];
+    
+    for (let blockNumber = currentBlock; blockNumber <= batchEnd; blockNumber++) {
+      batchPromises.push(monitorEventsAtBlock(
+        blockNumber,
+        config.provider,
+        config.eventsMapping
+      ));
+    }
+    
+    batches.push(Promise.all(batchPromises));
+  }
+
+  for (const batch of batches) {
+    const batchEvents = await batch;
+    const events = batchEvents.flat();
+    
+    if (events.length > 0) {
+      foundEvents = true;
+      events.forEach((event) => {
+        addEventToRSS(
+          event.address,
+          event.eventName,
+          event.topics,
+          event.title,
+          event.link,
+          config.networkName,
+          config.chainId,
+          event.blocknumber,
+          config.governanceName,
+          event.proposalLink,
+          event.timestamp,
+          convertBigIntToString(event.args)
         );
-
-        if (events.length > 0) {
-          foundEvents = true;
-          events.forEach((event) => {
-            addEventToRSS(
-              event.address,
-              event.eventName,
-              event.topics,
-              event.title,
-              event.link,
-              config.networkName,
-              config.chainId,
-              event.blocknumber,
-              config.governanceName,
-              event.proposalLink,
-              event.timestamp,
-              convertBigIntToString(event.args)
-            );
-          });
-        }
-
-        updateState(config.networkName, {
-          lastProcessedBlock: blockNumber,
-          hasError: false,
-          lastError: undefined
-        });    
-      } catch (error) {
-        console.error(`Error processing ${config.networkName} block ${blockNumber}:`, error);
-        updateState(config.networkName, {
-          lastProcessedBlock: blockNumber - 1,
-          hasError: true,
-          lastError: error instanceof Error ? error.message : String(error)
-        });
-      }
+      });
     }
-
-    // Delay between batches
-    if (batchEnd < endBlock) {
-      await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
-    }
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
+
   return foundEvents;
-}
-
-function updateState(network: string, state: Partial<ProcessingState>) {
-  const dir = path.dirname(STATE_FILE_PATH);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-
-  let allStates: Record<string, ProcessingState> = {};
-  try {
-    if (fs.existsSync(STATE_FILE_PATH)) {
-      allStates = JSON.parse(fs.readFileSync(STATE_FILE_PATH, 'utf8'));
-    }
-  } catch (error) {
-    console.warn('Error reading state file, starting fresh:', error);
-  }
-
-  allStates[network] = {
-    ...allStates[network],
-    ...state,
-    lastUpdated: new Date().toISOString()
-  };
-
-  fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(allStates, null, 2));
 }
 
 async function processLatestBlocks() {

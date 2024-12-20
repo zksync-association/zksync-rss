@@ -209,12 +209,13 @@ export const updateRSSFeed = async () => {
       
       const archiveContent = archiveFeed.xml();
       const localArchivePath = path.join(archivesDir, archiveFileName);
-      
+      const gcsArchivePath = `${GCS_ARCHIVE_PATH.replace(/\/?$/, '/')}${archiveFileName}`;
+
       fs.writeFileSync(localArchivePath, archiveContent);
       await uploadToGCS(
         GCS_BUCKET_NAME,
         localArchivePath,
-        `${GCS_ARCHIVE_PATH}${archiveFileName}`,
+        gcsArchivePath,
         archiveContent
       );
       
