@@ -30,17 +30,34 @@ const BATCH_DELAY = 1000;
 
 async function downloadStateFile() {
   try {
+    // Create data directory if it doesn't exist
+    const dir = path.dirname(STATE_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
     await downloadFromGCS(GCS_BUCKET_NAME, GCS_STATE_FILE_PATH, STATE_FILE_PATH);
     console.log('State file downloaded successfully');
   } catch (error) {
     console.warn('Failed to download state file from GCS, starting fresh:', error);
+    // Don't initialize the file here - let the main process handle it
   }
 }
 
 async function uploadStateFile() {
   try {
-    await uploadToGCS(GCS_BUCKET_NAME, STATE_FILE_PATH, GCS_STATE_FILE_PATH);
+    if (!fs.existsSync(STATE_FILE_PATH)) {
+      console.error('State file does not exist for upload');
+      return;
+    }
+    
+    const content = fs.readFileSync(STATE_FILE_PATH, 'utf-8');
+    await uploadToGCS(GCS_BUCKET_NAME, STATE_FILE_PATH, GCS_STATE_FILE_PATH, content);
     console.log('State file uploaded successfully');
+    
+    // Clean up local state file after successful upload
+    fs.unlinkSync(STATE_FILE_PATH);
+    console.log('Local state file cleaned up');
   } catch (error) {
     console.error('Failed to upload state file to GCS:', error);
   }
@@ -130,11 +147,14 @@ function updateState(network: string, state: Partial<ProcessingState>) {
     lastUpdated: new Date().toISOString()
   };
 
+  // Write the updated state file
   fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(allStates, null, 2));
+  console.log(`Updated state for ${network}:`, allStates[network]);
 }
 
 async function processLatestBlocks() {
   try {
+    // Download state file at start
     await downloadStateFile();
 
     const ethereumProvider = new ethers.JsonRpcProvider(
@@ -152,18 +172,19 @@ async function processLatestBlocks() {
     ]);
 
     let stateData: Record<string, ProcessingState> = {
-      ethereum: {
+      "Ethereum Mainnet": {
         lastProcessedBlock: ethereumCurrentBlock - 100,
         hasError: false,
         lastUpdated: new Date().toISOString()
       },
-      zksync: {
+      "ZKSync": {
         lastProcessedBlock: zksyncCurrentBlock - 100,
         hasError: false,
         lastUpdated: new Date().toISOString()
       }
     };
     
+    // Load existing state if available
     if (fs.existsSync(STATE_FILE_PATH)) {
       try {
         const fileContent = fs.readFileSync(STATE_FILE_PATH, 'utf8');
@@ -172,11 +193,16 @@ async function processLatestBlocks() {
       } catch (error) {
         console.error('Error parsing state file:', error);
       }
+    } else {
+      // Write initial state if we don't have a state file
+      fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(stateData, null, 2));
+      console.log('Created initial state file');
     }
 
     const ethereumStartBlock = (stateData["Ethereum Mainnet"]?.lastProcessedBlock ?? ethereumCurrentBlock - 100) + 1;
     const zksyncStartBlock = (stateData["ZKSync"]?.lastProcessedBlock ?? zksyncCurrentBlock - 100) + 1;
 
+    // Process blocks for both networks
     const [ethereumFoundEvents, zksyncFoundEvents] = await Promise.all([
       processBlockRangeForNetwork(
         {
@@ -206,17 +232,44 @@ async function processLatestBlocks() {
       )
     ]);
 
+    // Ensure state file exists before upload
+    if (!fs.existsSync(STATE_FILE_PATH)) {
+      console.error('State file missing before upload');
+      // Re-write state file if it's missing
+      fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(stateData, null, 2));
+    }
+
+    // Upload state file after processing
     await uploadStateFile();
 
+    // Process RSS feed if needed
     if (ethereumFoundEvents || zksyncFoundEvents) {
       const updated = await updateRSSFeed();
       console.log(updated ? 'RSS feed updated' : 'RSS feed unchanged');
+    }
+
+    // Clean up the data directory if it's empty
+    const dataDir = path.join(__dirname, '../data');
+    if (fs.existsSync(dataDir)) {
+      const files = fs.readdirSync(dataDir);
+      if (files.length === 0) {
+        fs.rmdirSync(dataDir);
+        console.log('Empty data directory cleaned up');
+      }
     }
 
     console.log('Successfully processed all blocks');
 
   } catch (error) {
     console.error('Failed to process latest blocks:', error);
+    // Try to save state file even if there's an error
+    try {
+      if (fs.existsSync(STATE_FILE_PATH)) {
+        await uploadStateFile();
+      }
+    } catch (uploadError) {
+      console.error('Failed to upload state file after error:', uploadError);
+    }
     process.exit(1);
   }
 }
