@@ -1,3 +1,5 @@
+export const revalidate = 10;
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { XMLParser } from 'fast-xml-parser';
@@ -42,7 +44,9 @@ async function getFeed(): Promise<Feed> {
 
   try {
     const response = await fetch(`${apiUrl}`, {
-      next: { revalidate: 60 }
+      next: {
+        revalidate: 10
+      }
     });
     const data = await response.text();
     const parser = new XMLParser({
