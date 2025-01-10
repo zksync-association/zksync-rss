@@ -5,11 +5,9 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+
 // GKE workloads compatible
-const keyFilePath = process.env.GOOGLE_KEY ? path.resolve(__dirname, process.env.GOOGLE_KEY) : '';
-const storage = new Storage({
-  keyFilename: keyFilePath,
-});
+const storage = new Storage(); 
 
 export const uploadToGCS = async (
   bucketName: string,
