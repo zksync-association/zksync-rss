@@ -1,6 +1,6 @@
 import RSS, { ItemOptions } from "rss";
 import { ethers } from "ethers";
-import { uploadToGCS, GCS_BUCKET_NAME, GCS_RSS_PATH, GCS_ARCHIVE_PATH, ARCHIVE_ITEM_THRESHOLD, ARCHIVE_ITEM_LIMIT } from "~/shared";
+import { uploadToGCS, GCS_BUCKET_NAME, GCS_RSS_PATH, GCS_ARCHIVE_PATH, ARCHIVE_ITEM_THRESHOLD } from "~/shared";
 import { Storage } from '@google-cloud/storage';
 import Parser from 'rss-parser';
 import fs from 'fs';
@@ -33,17 +33,20 @@ class RSSFeedManager {
   }
 
   private loadSavedItems() {
-    if (!fs.existsSync(CONFIG.filePaths.data)) return;
+    if (!fs.existsSync(CONFIG.filePaths.data)) {
+      console.log("No saved items file exists");
+      return;
+    }
     
     try {
       const items = JSON.parse(fs.readFileSync(CONFIG.filePaths.data, 'utf-8'))
         .sort((a: RSS.ItemOptions, b: RSS.ItemOptions) => {
           const dateA = new Date(a.date).getTime();
           const dateB = new Date(b.date).getTime();
-          return dateB - dateA; // Sort in descending order (newest first)
+          return dateB - dateA;
         });
+      console.log(`Loaded ${items.length} saved items`);
       items.forEach((item: RSS.ItemOptions) => this.feed.item(item));
-      // Delete the RSS feed data file after successful loading
       fs.unlinkSync(CONFIG.filePaths.data);
     } catch (error) {
       console.error('Error loading RSS feed:', error);
@@ -64,6 +67,7 @@ class RSSFeedManager {
     timestamp: string,
     eventArgs: Record<string, unknown>
   }) {
+    console.log(`Adding event: ${event.title}`);
     const guid = ethers.keccak256(ethers.toUtf8Bytes(event.title + event.block + event.link));
     
     const description = JSON.stringify({
@@ -106,6 +110,7 @@ class RSSFeedManager {
       date: item.date
     }));
     
+    console.log(`Saving ${items.length} items to file`);
     fs.mkdirSync(path.dirname(CONFIG.filePaths.data), { recursive: true });
     fs.writeFileSync(CONFIG.filePaths.data, JSON.stringify(items, null, 2));
   }
@@ -129,14 +134,6 @@ async upload(feed: RSS): Promise<boolean> {
       fs.mkdirSync(path.dirname(CONFIG.filePaths.output), { recursive: true });
       fs.writeFileSync(CONFIG.filePaths.output, rssContent);
       await uploadToGCS(GCS_BUCKET_NAME, CONFIG.filePaths.output, GCS_RSS_PATH, rssContent);
-      
-      // Clean up local files
-      if (fs.existsSync(CONFIG.filePaths.output)) {
-          fs.unlinkSync(CONFIG.filePaths.output);
-      }
-      if (fs.existsSync(CONFIG.filePaths.data)) {
-          fs.unlinkSync(CONFIG.filePaths.data);
-      }
       
       return true;
   } catch (error) {
@@ -180,54 +177,42 @@ export const addEventToRSS = (
 
 
 export const updateRSSFeed = async () => {
-
-  const feed = await feedManager.generate();
-  const items = (feed as any).items;
+  // Add logging to track items
+  console.log("Starting updateRSSFeed");
   
-
+  // Create archives directory first
   const archivesDir = path.join(__dirname, '../data/archives');
   fs.mkdirSync(archivesDir, { recursive: true });
 
+  // Download and process archived items before generating new feed
   const archivedItems = await downloadArchives(archivesDir);
+  console.log(`Downloaded ${archivedItems.length} archived items`);
+
+  // Generate new feed after we have archived items
+  const feed = await feedManager.generate();
+  const items = (feed as any).items;
+  console.log(`Generated feed with ${items.length} items`);
   
   if (items.length > ARCHIVE_ITEM_THRESHOLD) {
-    const itemsToArchive = items.slice(ARCHIVE_ITEM_THRESHOLD);
+    // Archive older items (items beyond the threshold)
+    const itemsToArchive = items.slice(0, items.length - ARCHIVE_ITEM_THRESHOLD);
+    console.log(`Archiving ${itemsToArchive.length} items`);
     
+    // Merge and sort all archived items
     const allArchivedItems = [...archivedItems, ...itemsToArchive].sort((a, b) => {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
+    console.log(`Total archived items after merge: ${allArchivedItems.length}`);
     
-    for (let i = 0; i < allArchivedItems.length; i += ARCHIVE_ITEM_LIMIT) {
-      const archiveItems = allArchivedItems.slice(i, i + ARCHIVE_ITEM_LIMIT);
-      const archiveFeed = new RSS(CONFIG.feed);
-      archiveItems.forEach(item => archiveFeed.item(item));
-      
-      const oldestDate = new Date(archiveItems[archiveItems.length - 1].date);
-      const newestDate = new Date(archiveItems[0].date);
-      const timestamp = Date.now();
-      const archiveFileName = `archive-${oldestDate.toISOString().split('T')[0]}-${newestDate.toISOString().split('T')[0]}-${timestamp}.xml`;
-      
-      const archiveContent = archiveFeed.xml();
-      const localArchivePath = path.join(archivesDir, archiveFileName);
-      
-      fs.writeFileSync(localArchivePath, archiveContent);
-      await uploadToGCS(
-        GCS_BUCKET_NAME,
-        localArchivePath,
-        `${GCS_ARCHIVE_PATH}${archiveFileName}`,
-        archiveContent
-      );
-      
-      fs.unlinkSync(localArchivePath);
-    }
-    
-    // Create new feed with only recent items
-    const recentItems = items.slice(0, ARCHIVE_ITEM_THRESHOLD);
+    // Keep the most recent ARCHIVE_ITEM_THRESHOLD items in the main feed
+    const recentItems = items.slice(-ARCHIVE_ITEM_THRESHOLD);
+    console.log(`Keeping ${recentItems.length} recent items in main feed`);
     const newFeed = new RSS(CONFIG.feed);
     recentItems.forEach((item: ItemOptions) => newFeed.item(item));
     
     await feedManager.upload(newFeed);
   } else {
+    console.log(`Uploading all ${items.length} items to main feed`);
     await feedManager.upload(feed);
   }
   

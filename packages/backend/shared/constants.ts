@@ -10,8 +10,8 @@ export const GCS_ARCHIVE_PATH = process.env.GCS_ARCHIVE_PATH || ''
 export const GCS_BUCKET_NAME = process.env.GCS_BUCKET_NAME || '';
 export const GCS_STATE_FILE_PATH = process.env.GCS_STATE_FILE_PATH || '';
 
-export const ARCHIVE_ITEM_THRESHOLD = Number(process.env.ARCHIVE_ITEM_THRESHOLD  || 50);
-export const ARCHIVE_ITEM_LIMIT = Number(process.env.ARCHIVE_ITEM_LIMIT || 100);
+export const ARCHIVE_ITEM_THRESHOLD = 20;
+export const ARCHIVE_ITEM_LIMIT = Number(process.env.ARCHIVE_ITEM_LIMIT || 1000);
 
 export const EventsMapping = {
   "ZKsync Network": {
