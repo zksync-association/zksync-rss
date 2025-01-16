@@ -20,8 +20,5 @@
   "dependencies": {
     "@google-cloud/storage": "^7.14.0",
     "rss-parser": "^3.13.0"
-  },
-  "engines": {
-    "node": ">=18.18.0"
   }
 }
