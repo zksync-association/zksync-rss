@@ -44,7 +44,7 @@ docker run zksync-rss-backend
 - `npm run process-blocks` - Process a specific block range
 - `npm run process-historic-blocks` - Process predefined historical blocks
 - `npm run frontend` - Start frontend development server
-- `npm run lint` - Run linter
+- `npm run lint` - Run linter check
 - `npm run type-check` - Run TypeScript type checking
 - `npm run build` - Build both frontend and backend
 - `npm run clean` - Clean all dependencies and build artifacts
