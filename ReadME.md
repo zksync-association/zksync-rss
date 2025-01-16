@@ -81,3 +81,4 @@ docker run zksync-rss-backend
 - Both Docker configurations are available for containerized deployment
 - Ensure proper configuration of GCP credentials and environment variables before running the containers
 - Changes in behaviour could be made in packages/backend/shared/cons
+- Node version 20
