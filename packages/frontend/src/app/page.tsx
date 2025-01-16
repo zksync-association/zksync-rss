@@ -78,7 +78,7 @@ async function getFeed(): Promise<Feed> {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Sort by date, newest first
     };
 
-  } catch (e) {
+  } catch {
     return {
       metadata: {
         title: 'Feed Not Found',
@@ -136,7 +136,7 @@ const RenderDescription = ({ description }: { description: string }) => {
         </div>
       </div>
     );
-  } catch (e) {
+  } catch {
     return <div className="text-red-400">Invalid description format</div>;
   }
 };
