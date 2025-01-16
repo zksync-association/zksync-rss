@@ -116,7 +116,7 @@ class RSSFeedManager {
   }
 
   private save() {
-    const items = (this.feed as any).items.map((item: ItemOptions) => ({
+    const items = (this.feed as RSSWithItems).items.map((item: ItemOptions) => ({
       title: item.title,
       description: item.description,
       url: item.url,
