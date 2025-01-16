@@ -24,6 +24,22 @@ const CONFIG = {
   }
 };
 
+interface RSSWithItems extends RSS {
+  items: ItemOptions[];
+}
+
+interface ParsedItem extends Parser.Item {
+  contentSnippet?: string;
+  description?: string;
+  link?: string;
+  creator?: string;
+  author?: string;
+  categories?: string[];
+  isoDate?: string;
+  pubDate?: string;
+  id?: string;
+}
+
 class RSSFeedManager {
   private feed: RSS;
 
@@ -117,7 +133,7 @@ class RSSFeedManager {
 
   async generate(): Promise<RSS> {
     const sortedFeed = new RSS(CONFIG.feed);
-    const items = (this.feed as any).items
+    const items = (this.feed as RSSWithItems).items
         .sort((a: ItemOptions, b: ItemOptions) => {
             const dateA = new Date(a.date).getTime();
             const dateB = new Date(b.date).getTime();
@@ -130,7 +146,7 @@ class RSSFeedManager {
 
 async upload(feed: RSS): Promise<boolean> {
   try {
-      const rssContent = feed.xml({ indent: true });
+      const rssContent = feed.xml();
       fs.mkdirSync(path.dirname(CONFIG.filePaths.output), { recursive: true });
       fs.writeFileSync(CONFIG.filePaths.output, rssContent);
       await uploadToGCS(GCS_BUCKET_NAME, CONFIG.filePaths.output, GCS_RSS_PATH, rssContent);
@@ -190,7 +206,7 @@ export const updateRSSFeed = async () => {
 
   // Generate new feed after we have archived items
   const feed = await feedManager.generate();
-  const items = (feed as any).items;
+  const items = (feed as RSSWithItems).items;
   console.log(`Generated feed with ${items.length} items`);
   
   if (items.length > ARCHIVE_ITEM_THRESHOLD) {
@@ -249,14 +265,14 @@ async function downloadArchives(archivesDir: string): Promise<ItemOptions[]> {
       const parser = new Parser();
       const result = await parser.parseString(content);
       
-      const parsedItems = result.items.map((item: any) => ({
-        title: item.title,
-        description: item.contentSnippet || item.description,
-        url: item.link,
-        date: item.isoDate || item.pubDate,
+      const parsedItems = result.items.map((item: ParsedItem): ItemOptions => ({
+        title: item.title || 'Untitled',
+        description: item.contentSnippet || item.description || '',
+        url: item.link || '',
+        date: item.isoDate || item.pubDate || new Date().toISOString(),
         categories: item.categories || [],
-        author: item.creator || item.author,
-        guid: item.guid || item.id
+        author: item.creator || item.author || 'Unknown',
+        guid: item.guid || item.id || ethers.randomBytes(32).toString()
       }));
       
       archivedItems = [...archivedItems, ...parsedItems];

@@ -18,24 +18,24 @@ export const getGovBodyFromAddress = (address: string): string => {
   return addressMapping[address] || "Unknown Governance Body";
 }
 
-export const convertBigIntToString = (obj: any): any => {
+export const convertBigIntToString = (obj: unknown): Record<string, unknown> => {
   if (typeof obj === 'bigint') {
-    return obj.toString();
+    return { value: obj.toString() };
   }
   
   if (Array.isArray(obj)) {
-    return obj.map(convertBigIntToString);
+    return { value: obj.map(convertBigIntToString) };
   }
   
   if (typeof obj === 'object' && obj !== null) {
-    const newObj: any = {};
-    for (const key in obj) {
-      newObj[key] = convertBigIntToString(obj[key]);
+    const newObj: Record<string, unknown> = {};
+    for (const key in obj as Record<string, unknown>) {
+      newObj[key] = convertBigIntToString((obj as Record<string, unknown>)[key]);
     }
     return newObj;
   }
   
-  return obj;
+  return { value: obj };
 }
 
 export const getCategory = (address: string): string => {
