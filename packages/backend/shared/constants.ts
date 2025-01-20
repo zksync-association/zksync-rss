@@ -18,7 +18,6 @@ export const EventsMapping = {
     "0x76705327e682F2d96943280D99464Ab61219e34f": [
         "ProposalQueued",
         "ProposalThresholdSet",
-        "ProposalExtended",
         "LateQuorumVoteExtensionSet",
         "ProposalExecuted",
         "ProposalCanceled",
@@ -54,7 +53,6 @@ export const EventsMapping = {
         "ProposalThresholdSet",
         "VotingPeriodSet",
         "VotingDelaySet",
-        "ProposalExtended",
         "LateQuorumVoteExtensionSet",
         "ProposalExecuted",
         "ProposalCanceled",
@@ -79,7 +77,6 @@ export const EventsMapping = {
         "ProposalExecuted",
         "ProposalCanceled",
         "ProposalCreated",
-        "ProposalExtended",
         "LateQuorumVoteExtensionSet",
         "ProposalThresholdSet",
         "VotingPeriodSet",
@@ -153,7 +150,6 @@ export const UnifiedMinimalABI = [
 
   // Governance parameter events
   "event MinDelayChange(uint256 oldDuration, uint256 newDuration)",
-  "event ProposalExtended(uint256 proposalId, uint64 extendedDeadline)",
   "event LateQuorumVoteExtensionSet(uint64 oldVoteExtension, uint64 newVoteExtension)",
   "event ProposalQueued(bytes32 proposalId)",
   "event TimelockChange(address oldTimelock, address newTimelock)",
