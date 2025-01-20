@@ -5,9 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-
-// GKE workloads compatible
-const storage = new Storage(); 
+const storage = new Storage();
 
 export const uploadToGCS = async (
   bucketName: string,

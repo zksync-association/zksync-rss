@@ -42,30 +42,69 @@ interface ParsedItem extends Parser.Item {
 
 class RSSFeedManager {
   private feed: RSS;
+  private static instance: RSSFeedManager;
+  private initialized = false;
+  private seenGuids = new Set<string>();
 
-  constructor() {
+  private constructor() {
     this.feed = new RSS(CONFIG.feed);
-    this.loadSavedItems();
   }
 
-  private loadSavedItems() {
-    if (!fs.existsSync(CONFIG.filePaths.data)) {
-      console.log("No saved items file exists");
-      return;
+  static getInstance(): RSSFeedManager {
+    if (!RSSFeedManager.instance) {
+      RSSFeedManager.instance = new RSSFeedManager();
     }
-    
+    return RSSFeedManager.instance;
+  }
+
+  async initialize() {
+    if (!this.initialized) {
+      await this.downloadExistingFeed();
+      this.initialized = true;
+    }
+  }
+
+  async downloadExistingFeed() {
     try {
-      const items = JSON.parse(fs.readFileSync(CONFIG.filePaths.data, 'utf-8'))
-        .sort((a: RSS.ItemOptions, b: RSS.ItemOptions) => {
-          const dateA = new Date(a.date).getTime();
-          const dateB = new Date(b.date).getTime();
-          return dateB - dateA;
-        });
-      console.log(`Loaded ${items.length} saved items`);
-      items.forEach((item: RSS.ItemOptions) => this.feed.item(item));
-      fs.unlinkSync(CONFIG.filePaths.data);
+      const storage = new Storage();
+      const bucket = storage.bucket(GCS_BUCKET_NAME);
+      
+      // Get current feed
+      const file = bucket.file(GCS_RSS_PATH);
+      if ((await file.exists())[0]) {
+        const [content] = await file.download();
+        const result = await new Parser().parseString(content.toString());
+        result.items?.forEach(item => this.addItemToFeed(item));
+      }
+
+      // Get archived items
+      const [files] = await bucket.getFiles({ prefix: GCS_ARCHIVE_PATH });
+      for (const file of files) {
+        const [content] = await file.download();
+        const result = await new Parser().parseString(content.toString());
+        result.items?.forEach(item => this.addItemToFeed(item));
+      }
+      
+      console.log(`Loaded ${this.seenGuids.size} unique items`);
     } catch (error) {
-      console.error('Error loading RSS feed:', error);
+      console.error('Error downloading feed:', error);
+      throw error;
+    }
+  }
+
+  private addItemToFeed(item: ParsedItem) {
+    const guid = item.guid || item.id;
+    if (guid && !this.seenGuids.has(guid)) {
+      this.seenGuids.add(guid);
+      this.feed.item({
+        title: item.title || '',
+        description: item.content || item.contentSnippet || '',
+        url: item.link || '',
+        guid: guid,
+        categories: item.categories || [],
+        author: item.creator || item.author || '',
+        date: new Date(item.isoDate || item.pubDate || new Date())
+      });
     }
   }
 
@@ -83,83 +122,70 @@ class RSSFeedManager {
     timestamp: string,
     eventArgs: Record<string, unknown>
   }) {
-    console.log(`Adding event: ${event.title}`);
     const guid = ethers.keccak256(ethers.toUtf8Bytes(event.title + event.block + event.link));
     
-    const description = JSON.stringify({
-      eventDetails: {
-        network: event.networkName,
-        chainId: event.chainId,
-        block: event.block,
-        timestamp: new Date(event.timestamp).toLocaleString()
-      },
-      governanceInfo: {
-        governanceBody: event.govBody,
-        eventType: event.eventName,
-        contractAddress: event.address,
-        proposalLink: event.proposalLink
-      },
-      eventData: event.eventArgs
-    });
+    if (this.seenGuids.has(guid)) {
+      console.log(`Skipping duplicate event: ${event.title}`);
+      return;
+    }
+
+    console.log(`Adding new event: ${event.title}`);
+    this.seenGuids.add(guid);
     
     this.feed.item({
       title: event.title,
       url: event.link,
-      description,
+      description: JSON.stringify({
+        eventDetails: {
+          network: event.networkName,
+          chainId: event.chainId,
+          block: event.block,
+          timestamp: new Date(event.timestamp).toLocaleString()
+        },
+        governanceInfo: {
+          governanceBody: event.govBody,
+          eventType: event.eventName,
+          contractAddress: event.address,
+          proposalLink: event.proposalLink
+        },
+        eventData: event.eventArgs
+      }),
       author: event.govBody,
       categories: event.topics,
       date: new Date(event.timestamp),
       guid,
     });
-
-    this.save();
-  }
-
-  private save() {
-    const items = (this.feed as RSSWithItems).items.map((item: ItemOptions) => ({
-      title: item.title,
-      description: item.description,
-      url: item.url,
-      guid: item.guid,
-      categories: item.categories,
-      author: item.author,
-      date: item.date
-    }));
-    
-    console.log(`Saving ${items.length} items to file`);
-    fs.mkdirSync(path.dirname(CONFIG.filePaths.data), { recursive: true });
-    fs.writeFileSync(CONFIG.filePaths.data, JSON.stringify(items, null, 2));
   }
 
   async generate(): Promise<RSS> {
+    // Create new feed
     const sortedFeed = new RSS(CONFIG.feed);
-    const items = (this.feed as RSSWithItems).items
-        .sort((a: ItemOptions, b: ItemOptions) => {
-            const dateA = new Date(a.date).getTime();
-            const dateB = new Date(b.date).getTime();
-            return dateB - dateA;
-        });
     
-    items.forEach((item: ItemOptions) => sortedFeed.item(item));
+    // Get all items and sort by date (newest first)
+    const items = (this.feed as RSSWithItems).items
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    // Add sorted items to feed
+    items.forEach(item => sortedFeed.item(item));
+    
     return sortedFeed;
-}
-
-async upload(feed: RSS): Promise<boolean> {
-  try {
-      const rssContent = feed.xml();
-      fs.mkdirSync(path.dirname(CONFIG.filePaths.output), { recursive: true });
-      fs.writeFileSync(CONFIG.filePaths.output, rssContent);
-      await uploadToGCS(GCS_BUCKET_NAME, CONFIG.filePaths.output, GCS_RSS_PATH, rssContent);
-      
-      return true;
-  } catch (error) {
-      console.error('Failed to upload RSS feed:', error);
-      return false;
   }
-}
 
+  async upload(feed: RSS): Promise<boolean> {
+    try {
+        const rssContent = feed.xml();
+        fs.mkdirSync(path.dirname(CONFIG.filePaths.output), { recursive: true });
+        fs.writeFileSync(CONFIG.filePaths.output, rssContent);
+        await uploadToGCS(GCS_BUCKET_NAME, CONFIG.filePaths.output, GCS_RSS_PATH, rssContent);
+        
+        return true;
+    } catch (error) {
+        console.error('Failed to upload RSS feed:', error);
+        return false;
+    }
+  }
 
-async generateAndUpload(): Promise<boolean> {
+  async generateAndUpload(): Promise<boolean> {
     try {
         const feed = await this.generate();
         return await this.upload(feed);
@@ -167,13 +193,10 @@ async generateAndUpload(): Promise<boolean> {
         console.error('Failed to generate/upload RSS feed:', error);
         return false;
     }
+  }
 }
-}
 
-
-const feedManager = new RSSFeedManager();
-
-export const addEventToRSS = (
+export const addEventToRSS = async (
   address: string, 
   eventName: string, 
   topics: string[], 
@@ -186,104 +209,43 @@ export const addEventToRSS = (
   proposalLink: string | null, 
   timestamp: string,
   eventArgs: Record<string, unknown>
-) => feedManager.addEvent({
-  address, eventName, topics, title, link, networkName,
-  chainId, block, govBody, proposalLink, timestamp, eventArgs
-});
-
-
-export const updateRSSFeed = async () => {
-  // Add logging to track items
-  console.log("Starting updateRSSFeed");
-  
-  // Create archives directory first
-  const archivesDir = path.join(__dirname, '../data/archives');
-  fs.mkdirSync(archivesDir, { recursive: true });
-
-  // Download and process archived items before generating new feed
-  const archivedItems = await downloadArchives(archivesDir);
-  console.log(`Downloaded ${archivedItems.length} archived items`);
-
-  // Generate new feed after we have archived items
-  const feed = await feedManager.generate();
-  const items = (feed as RSSWithItems).items;
-  console.log(`Generated feed with ${items.length} items`);
-  
-  if (items.length > ARCHIVE_ITEM_THRESHOLD) {
-    // Archive older items (items beyond the threshold)
-    const itemsToArchive = items.slice(0, items.length - ARCHIVE_ITEM_THRESHOLD);
-    console.log(`Archiving ${itemsToArchive.length} items`);
-    
-    // Merge and sort all archived items
-    const allArchivedItems = [...archivedItems, ...itemsToArchive].sort((a, b) => {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    });
-    console.log(`Total archived items after merge: ${allArchivedItems.length}`);
-    
-    // Keep the most recent ARCHIVE_ITEM_THRESHOLD items in the main feed
-    const recentItems = items.slice(-ARCHIVE_ITEM_THRESHOLD);
-    console.log(`Keeping ${recentItems.length} recent items in main feed`);
-    const newFeed = new RSS(CONFIG.feed);
-    recentItems.forEach((item: ItemOptions) => newFeed.item(item));
-    
-    await feedManager.upload(newFeed);
-  } else {
-    console.log(`Uploading all ${items.length} items to main feed`);
-    await feedManager.upload(feed);
-  }
-  
-  // Clean up the data directory
-  const dataDir = path.join(__dirname, '../data');
-  if (fs.existsSync(dataDir)) {
-    fs.rmSync(dataDir, { recursive: true, force: true });
-  }
-  
-  return true;
+) => {
+  const manager = RSSFeedManager.getInstance();
+  await manager.initialize();
+  manager.addEvent({
+    address, eventName, topics, title, link, networkName,
+    chainId, block, govBody, proposalLink, timestamp, eventArgs
+  });
 };
 
-
-async function downloadArchives(archivesDir: string): Promise<ItemOptions[]> {
-  try {
-    const storage = new Storage(); 
-    const bucket = storage.bucket(GCS_BUCKET_NAME); 
-    const [files] = await bucket.getFiles({ prefix: GCS_ARCHIVE_PATH });
+export const updateRSSFeed = async () => {
+  const manager = RSSFeedManager.getInstance();
+  await manager.initialize();
+  
+  const feed = await manager.generate(); // Items are now sorted newest first
+  const items = (feed as RSSWithItems).items;
+  
+  if (items.length > ARCHIVE_ITEM_THRESHOLD) {
+    // Keep newest items in main feed
+    const itemsToKeep = items.slice(0, ARCHIVE_ITEM_THRESHOLD);
+    // Archive older items
+    const itemsToArchive = items.slice(ARCHIVE_ITEM_THRESHOLD);
     
-    // Sort files by their timestamp in filename (newest first)
-    const sortedFiles = files.sort((a, b) => {
-      const timestampA = parseInt(a.name.split('-').pop()?.replace('.xml', '') || '0');
-      const timestampB = parseInt(b.name.split('-').pop()?.replace('.xml', '') || '0');
-      return timestampB - timestampA;
-    });
+    // Create and upload archive of older items
+    const archiveFeed = new RSS(CONFIG.feed);
+    itemsToArchive.forEach(item => archiveFeed.item(item));
+    await uploadToGCS(
+      GCS_BUCKET_NAME,
+      CONFIG.filePaths.output,
+      `${GCS_ARCHIVE_PATH}/archive-${Date.now()}.xml`,
+      archiveFeed.xml()
+    );
     
-    let archivedItems: ItemOptions[] = [];
-    
-    for (const file of sortedFiles) {
-      const localPath = path.join(archivesDir, path.basename(file.name));
-      await file.download({ destination: localPath });
-      
-      const content = fs.readFileSync(localPath, 'utf-8');
-      const parser = new Parser();
-      const result = await parser.parseString(content);
-      
-      const parsedItems = result.items.map((item: ParsedItem): ItemOptions => ({
-        title: item.title || 'Untitled',
-        description: item.contentSnippet || item.description || '',
-        url: item.link || '',
-        date: item.isoDate || item.pubDate || new Date().toISOString(),
-        categories: item.categories || [],
-        author: item.creator || item.author || 'Unknown',
-        guid: item.guid || item.id || ethers.randomBytes(32).toString()
-      }));
-      
-      archivedItems = [...archivedItems, ...parsedItems];
-      
-      // Clean up downloaded file
-      fs.unlinkSync(localPath);
-    }
-    
-    return archivedItems;
-  } catch (error) {
-    console.error('Error downloading archives:', error);
-    return [];
+    // Update main feed with newest items
+    const newFeed = new RSS(CONFIG.feed);
+    itemsToKeep.forEach(item => newFeed.item(item));
+    return await manager.upload(newFeed);
   }
-}
+  
+  return await manager.upload(feed);
+};
