@@ -28,11 +28,18 @@ interface Feed {
 async function getFeed(): Promise<Feed> {
   const apiUrl = process.env.NEXT_PUBLIC_RSS_FILE;
   
+  // Add debug logging
+  console.log('Environment check:', {
+    apiUrl,
+    nodeEnv: process.env.NODE_ENV,
+    hasEnvVar: !!process.env.NEXT_PUBLIC_RSS_FILE
+  });
+  
   if (!apiUrl) {
     return {
       metadata: {
         title: 'Configuration Error',
-        description: 'The API URL has not been configured. Please set NEXT_PUBLIC_API_URL environment variable.',
+        description: 'The API URL has not been configured. Please set NEXT_PUBLIC_RSS_FILE environment variable.',
         link: '',
       },
       items: []
@@ -40,6 +47,16 @@ async function getFeed(): Promise<Feed> {
   }
 
   try {
+    // Log the actual request we're making
+    console.log('Attempting fetch:', {
+      url: apiUrl,
+      mode: 'cors',
+      headers: {
+        'Accept': 'application/xml, text/xml, */*',
+        'Cache-Control': 'no-cache'
+      }
+    });
+
     const response = await fetch(`${apiUrl}`, {
       cache: 'no-store',
       headers: {
