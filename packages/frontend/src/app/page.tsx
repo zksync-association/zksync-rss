@@ -26,7 +26,6 @@ interface Feed {
 }
 
 async function getFeed(): Promise<Feed> {
-  // Public link to rss file in gcp
   const apiUrl = process.env.NEXT_PUBLIC_RSS_FILE;
   
   if (!apiUrl) {
@@ -42,9 +41,33 @@ async function getFeed(): Promise<Feed> {
 
   try {
     const response = await fetch(`${apiUrl}`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/xml, text/xml, */*',
+        'Cache-Control': 'no-cache'
+      },
+      mode: 'cors'  // Explicitly set CORS mode
     });
+    
+    if (!response.ok) {
+      console.error('Feed fetch failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: apiUrl
+      });
+      throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+    }
+    
     const data = await response.text();
+    
+    if (!data || data.trim() === '') {
+      console.error('Empty response received');
+      throw new Error('Empty response received');
+    }
+
+    // Log first few characters to debug
+    console.log('Response preview:', data.substring(0, 200));
+    
     const parser = new XMLParser({
       ignoreAttributes: false,
       parseAttributeValue: true
