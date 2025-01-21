@@ -20,29 +20,40 @@ export const uploadToGCS = async (
     
     // If content is provided and file doesn't exist, create it
     if (content && !fs.existsSync(filePath)) {
-      // Ensure directory exists
       const dir = path.dirname(filePath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      // Write the content to file
       fs.writeFileSync(filePath, content);
     }
 
-    // Check if file exists after potential creation
     if (!fs.existsSync(filePath)) {
       throw new Error(`File not found at path: ${filePath}`);
     }
 
-    // Upload file
+    // Upload file with no-cache settings
     await bucket.upload(filePath, {
       destination: destinationPath,
       metadata: {
-        contentType: path.extname(filePath) === '.xml' ? 'application/xml' : 'application/json'
+        contentType: path.extname(filePath) === '.xml' ? 'application/xml' : 'application/json',
+        cacheControl: 'no-cache, no-store, must-revalidate', // Prevent caching
+        pragma: 'no-cache',  // HTTP 1.0 compatibility
+        expires: '0'         // Immediate expiration
       }
     });
 
-    console.log(`Successfully uploaded ${filePath} to ${bucketName}/${destinationPath}`);
+    // Make the file publicly accessible with no-cache headers
+    const file = bucket.file(destinationPath);
+    await file.makePublic();
+
+    // Update the metadata separately to ensure it's set
+    await file.setMetadata({
+      cacheControl: 'no-cache, no-store, must-revalidate',
+      pragma: 'no-cache',
+      expires: '0'
+    });
+
+    console.log(`Successfully uploaded ${filePath} to ${bucketName}/${destinationPath} with no-cache settings`);
   } catch (error) {
     console.error('Error uploading file to GCS:', error);
     throw error;
