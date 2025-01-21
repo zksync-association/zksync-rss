@@ -1,3 +1,5 @@
+export const revalidate = 60;
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { XMLParser } from 'fast-xml-parser';
@@ -26,20 +28,14 @@ interface Feed {
 }
 
 async function getFeed(): Promise<Feed> {
+  // Public link to rss file in gcp
   const apiUrl = process.env.NEXT_PUBLIC_RSS_FILE;
-  
-  // Add debug logging
-  console.log('Environment check:', {
-    apiUrl,
-    nodeEnv: process.env.NODE_ENV,
-    hasEnvVar: !!process.env.NEXT_PUBLIC_RSS_FILE
-  });
   
   if (!apiUrl) {
     return {
       metadata: {
         title: 'Configuration Error',
-        description: 'The API URL has not been configured. Please set NEXT_PUBLIC_RSS_FILE environment variable.',
+        description: 'The API URL has not been configured. Please set NEXT_PUBLIC_API_URL environment variable.',
         link: '',
       },
       items: []
@@ -47,44 +43,12 @@ async function getFeed(): Promise<Feed> {
   }
 
   try {
-    // Log the actual request we're making
-    console.log('Attempting fetch:', {
-      url: apiUrl,
-      mode: 'cors',
-      headers: {
-        'Accept': 'application/xml, text/xml, */*',
-        'Cache-Control': 'no-cache'
+    const response = await fetch(`${apiUrl}`, {
+      next: {
+        revalidate: 10
       }
     });
-
-    const response = await fetch(`${apiUrl}`, {
-      cache: 'no-store',
-      headers: {
-        'Accept': 'application/xml, text/xml, */*',
-        'Cache-Control': 'no-cache'
-      },
-      mode: 'cors'  // Explicitly set CORS mode
-    });
-    
-    if (!response.ok) {
-      console.error('Feed fetch failed:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: apiUrl
-      });
-      throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-    }
-    
     const data = await response.text();
-    
-    if (!data || data.trim() === '') {
-      console.error('Empty response received');
-      throw new Error('Empty response received');
-    }
-
-    // Log first few characters to debug
-    console.log('Response preview:', data.substring(0, 200));
-    
     const parser = new XMLParser({
       ignoreAttributes: false,
       parseAttributeValue: true
