@@ -1,4 +1,4 @@
-export const revalidate = 10;
+export const revalidate = 60;
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
