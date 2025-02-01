@@ -29,7 +29,6 @@ export const EventsMapping = {
         "VotingPeriodSet",
         "DelegateVotesChanged",
         "DelegateChanged",
-        "VoteCast",
     ],
     "0x3701fB675bCd4A85eb11A2467628BBe193F6e6A8": [
         "RoleAdminChanged",
@@ -125,7 +124,6 @@ export const UnifiedMinimalABI = [
   "event ChangeSecurityCouncil(address indexed _securityCouncilBefore, address indexed _securityCouncilAfter)",
   "event ChangeGuardians(address indexed _guardiansBefore, address indexed _guardiansAfter)",
   "event ChangeEmergencyUpgradeBoard(address indexed _emergencyUpgradeBoardBefore, address indexed _emergencyUpgradeBoardAfter)",
-  "event VoteCast(address indexed voter, uint256 proposalId, uint8 support, uint256 weight, string reason)",
   // Upgrade related events
   "event UpgradeStarted(bytes32 indexed _id, address proposer, uint256 value, bytes data)",
   "event UpgradeLegalVetoExtended(bytes32 indexed _id)",
