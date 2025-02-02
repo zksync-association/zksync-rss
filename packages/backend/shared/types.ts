@@ -26,3 +26,25 @@ export interface ParsedEvent {
   proposalLink: string;
 }
 
+export interface ProcessingError {
+  block: number;
+  timestamp: string;
+  error: string;
+}
+
+export interface ProcessingRecord {
+  network: string;
+  startBlock: number;
+  endBlock: number;
+  timestamp: string;
+  errors: ProcessingError[];
+  eventsFound: number;
+}
+
+export interface ProcessingHistory {
+  records: ProcessingRecord[];
+  archivedRecords?: {
+    path: string;
+    count: number;
+  }[];
+} 

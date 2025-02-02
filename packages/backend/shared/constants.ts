@@ -9,6 +9,7 @@ export const GCS_RSS_PATH = process.env.GCS_RSS_PATH || '';
 export const GCS_ARCHIVE_PATH = process.env.GCS_ARCHIVE_PATH || ''
 export const GCS_BUCKET_NAME = process.env.GCS_BUCKET_NAME || '';
 export const GCS_STATE_FILE_PATH = process.env.GCS_STATE_FILE_PATH || 'state/processing-state.json';
+export const GCS_HISTORY_FILE_PATH = process.env.GCS_PROCESSING_HISTORY_PATH || 'state/processing-history.json';
 
 export const ARCHIVE_ITEM_THRESHOLD = Number(process.env.ARCHIVE_ITEM_THRESHOLD || 50);
 export const ARCHIVE_ITEM_LIMIT = Number(process.env.ARCHIVE_ITEM_LIMIT || 1000);
@@ -24,6 +25,7 @@ export const EventsMapping = {
         "ProposalCreated",
         "TimelockChange",
         "CallScheduled",
+        "ProposalExtended",
         "QuorumUpdated",
         "VotingDelaySet",
         "VotingPeriodSet",
@@ -53,6 +55,7 @@ export const EventsMapping = {
         "VotingPeriodSet",
         "VotingDelaySet",
         "LateQuorumVoteExtensionSet",
+        "ProposalExtended",
         "ProposalExecuted",
         "ProposalCanceled",
         "ProposalCreated",
@@ -79,6 +82,7 @@ export const EventsMapping = {
         "LateQuorumVoteExtensionSet",
         "ProposalThresholdSet",
         "VotingPeriodSet",
+        "ProposalExtended",
         "VotingDelaySet",
         "ProposalQueued",
         "QuorumUpdated",
@@ -165,6 +169,7 @@ export const UnifiedMinimalABI = [
 
   // Proposal and voting events
   "event ProposalCreated(uint256 proposalId, address proposer, address[] targets, uint256[] values, string[] signatures, bytes[] calldatas, uint256 voteStart, uint256 voteEnd, string description)",
+  "event ProposalExtended(uint256 indexed proposalId, uint64 extendedDeadline)",
   "event ProposalExecuted(uint256 proposalId)",
   "event ProposalCanceled(uint256 proposalId)",
   "event IsProposeGuardedToggled(bool oldState, bool newState)",
