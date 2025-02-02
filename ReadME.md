@@ -191,3 +191,51 @@ docker run zksync-rss-backend
 - GCS files are configured with no-cache to ensure latest data
 - Regular processing runs every 10 minutes via cron
 - Error recovery can be performed without resetting the entire system
+
+## Minimal System Requirements
+
+### CPU
+- Minimum: 2 CPU cores
+- Recommended: 4 CPU cores
+- Reason: 
+  - Parallel processing of two networks
+  - Event parsing and RSS generation
+  - No heavy computation required
+
+### RAM
+- Minimum: 2GB RAM
+- Recommended: 4GB RAM
+- Reason:
+  - RSS feed processing (~50MB)
+  - State file management (~10MB)
+  - Processing history (~100MB)
+  - Node.js runtime (~500MB)
+  - Buffer for concurrent operations
+
+### Storage
+- Minimum: 1GB
+- Recommended: 5GB
+- Reason:
+  - RSS feed archives
+  - Processing history archives
+  - Temporary files
+  - Node modules
+
+### Network Bandwidth
+- Minimum: 10 Mbps
+- Recommended: 25 Mbps
+- Reason:
+  - RPC calls to Ethereum/ZKSync nodes
+  - GCS file uploads/downloads
+  - ~100 blocks processed every 10 minutes
+  - Average RPC payload size ~2KB per block
+
+### GPU
+- Not required
+- All operations are CPU/IO bound
+
+### Notes
+- No special hardware required
+- Main bottleneck is network I/O for RPC calls
+- Can run on basic cloud instances (e.g., e2-medium on GCP)
+- Docker container typically uses ~500MB-1GB memory
