@@ -9,19 +9,95 @@ A service that monitors ZKSync and Ethereum networks for governance events and g
 - Stores state and RSS feeds in Google Cloud Storage
 - Supports both real-time monitoring and historical block processing
 - Automatic RSS feed updates when new events are found
+- Error tracking and recovery through processing history
+- Specific block processing for targeted event recovery
 
 ## Setup
 
 1. Clone the repository
 2. Install dependencies
-3. Create `.env` file in `packages/backend` with required environment variables
+3. Create `.env` file in `packages/backend` with required environment variables:
+```bash
+ETHEREUM_RPC_URL=your_ethereum_rpc_url
+ZKSYNC_RPC_URL=your_zksync_rpc_url
+GCS_RSS_PATH=rss/feed.xml
+GCS_ARCHIVE_PATH=rss/archive
+GCS_BUCKET_NAME=your_bucket_name
+GCS_STATE_FILE_PATH=state/processing-state.json
+GCS_PROCESSING_HISTORY_PATH=state/processing-history.json
+```
 4. Create a GCP storage bucket with the following folder: zksync-rss
 5. Configure your GKE workload identity on your cluster
 
-### Option A: Running Without Docker
+## First Time Setup
 
-7. Run `npm run process-historic-blocks` to setup the feed
-8. Setup a cron-job to run `npm run process-blocks` every x minutes
+1. Clear existing GCP data:
+```bash
+gsutil -m rm -r gs://your-bucket-name/**
+```
+
+2. Initialize with historical data:
+```bash
+npm run process-historic-blocks
+```
+
+3. Set up crontab for regular processing:
+```bash
+crontab -e
+# Add line:
+*/10 * * * * cd /path/to/project/packages/backend && npm run process-blocks
+```
+
+4. Configure GCS cache settings:
+```bash
+gsutil setmeta -h "Cache-Control:no-cache,max-age=0" \
+  gs://your-bucket-name/rss/feed.xml \
+  gs://your-bucket-name/state/processing-state.json \
+  gs://your-bucket-name/state/processing-history.json
+```
+
+## Error Recovery
+
+The system maintains a processing history in GCS (`processing-history.json`):
+```json
+{
+  "records": [
+    {
+      "network": "ZKSync",
+      "startBlock": 54549000,
+      "endBlock": 54549100,
+      "timestamp": "2024-03-20T12:00:00Z",
+      "errors": [
+        {
+          "block": 54549081,
+          "timestamp": "2024-03-20T12:00:01Z",
+          "error": "Failed to decode event..."
+        }
+      ],
+      "eventsFound": 5
+    }
+  ],
+  "archivedRecords": [
+    {
+      "path": "state/archive/processing-history-1710936000000.json",
+      "count": 900
+    }
+  ]
+}
+```
+
+To recover from errors:
+1. Check processing history:
+```bash
+gsutil cat gs://your-bucket-name/state/processing-history.json
+```
+
+2. Reprocess specific blocks:
+```bash
+npm run process-specific-blocks <network> <block1> <block2> ...
+# Example:
+npm run process-specific-blocks zksync 54549081 54549082
+```
 
 ### Option B: Running With Docker
 
@@ -41,8 +117,9 @@ docker run zksync-rss-backend
 
 ## Available Scripts
 
-- `npm run process-blocks` - Process a specific block range
+- `npm run process-blocks` - Process latest blocks
 - `npm run process-historic-blocks` - Process predefined historical blocks
+- `npm run process-specific-blocks` - Process specific blocks for error recovery
 - `npm run frontend` - Start frontend development server
 - `npm run lint` - Run linter check
 - `npm run type-check` - Run TypeScript type checking
@@ -61,11 +138,40 @@ docker run zksync-rss-backend
 ```
 ├── packages/
 │   ├── backend/    # Backend service
+│   │   ├── entry/
+│   │   │   ├── processBlockRange.ts    # Regular processing
+│   │   │   ├── processHistoricBlocks.ts # Historical processing
+│   │   │   └── processSpecificBlocks.ts # Recovery processing
+│   │   ├── rss/    # RSS generation
+│   │   └── shared/ # Shared utilities
 │   └── frontend/   # Frontend application
 ├── Dockerfile      # Docker configuration for recurring process
 ├── Dockerfile.init # Docker configuration for initial setup
 ├── package.json
 └── README.md
+```
+
+## Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Entry Points   │     │  Core Services  │     │  Storage        │
+├─────────────────┤     ├─────────────────┤     ├─────────────────┤
+│ processBlocks   │────>│ Event Monitor   │────>│ RSS Feed        │
+│ processHistoric │     │ RSS Generator   │     │ State File      │
+│ processSpecific │     │ Error Tracker   │     │ Process History │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+         │                      │                        │
+         └──────────────────────┴────────────────────────┘
+                          Error Recovery
+                              │
+                    ┌─────────┴─────────┐
+                    │  Recovery Flow    │
+                    ├─────────┬─────────┤
+                    │Check History      │
+                    │Process Blocks     │
+                    │Update RSS         │
+                    └─────────┴─────────┘
 ```
 
 ## Environment Variables
@@ -80,4 +186,8 @@ docker run zksync-rss-backend
 - The recurring process (`process-blocks`) should be scheduled to run at regular intervals
 - Both Docker configurations are available for containerized deployment
 - Ensure proper configuration of GCP credentials and environment variables before running the containers
-- Changes in behaviour could be made in packages/backend/shared/cons
+- Changes in behaviour could be made in packages/backend/shared/constants.ts
+- Processing history is maintained for error tracking and recovery
+- GCS files are configured with no-cache to ensure latest data
+- Regular processing runs every 10 minutes via cron
+- Error recovery can be performed without resetting the entire system
