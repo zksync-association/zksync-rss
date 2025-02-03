@@ -10,7 +10,10 @@ import {
   uploadToGCS,
   monitorEventsAtBlock,
   GCS_BUCKET_NAME,
-  GCS_STATE_FILE_PATH
+  GCS_STATE_FILE_PATH,
+  GCS_HISTORY_FILE_PATH,
+  ProcessingHistory,
+  ProcessingRecord
 } from "~/shared";
 import dotenv from 'dotenv';
 
@@ -70,12 +73,23 @@ async function processBlockRangeForNetwork(
   batchSize: number = BATCH_SIZE
 ) {
   console.log(`Processing ${config.networkName} blocks ${startBlock} to ${endBlock}`);
-  let foundEvents = false;
-    for (let currentBlock = startBlock; currentBlock <= endBlock; currentBlock += batchSize) {
-      const batchEnd = Math.min(currentBlock + batchSize - 1, endBlock);
-      console.log(`Processing ${config.networkName} batch: ${currentBlock} to ${batchEnd}`);
+  
+  // Initialize processing record
+  const record: ProcessingRecord = {
+    network: config.networkName,
+    startBlock: startBlock,
+    endBlock: endBlock,
+    timestamp: new Date().toISOString(),
+    errors: [],
+    eventsFound: 0
+  };
 
-      for (let blockNumber = currentBlock; blockNumber <= batchEnd; blockNumber++) {
+  let foundEvents = false;
+  for (let currentBlock = startBlock; currentBlock <= endBlock; currentBlock += batchSize) {
+    const batchEnd = Math.min(currentBlock + batchSize - 1, endBlock);
+    console.log(`Processing ${config.networkName} batch: ${currentBlock} to ${batchEnd}`);
+
+    for (let blockNumber = currentBlock; blockNumber <= batchEnd; blockNumber++) {
       try {
         const events = await monitorEventsAtBlock(
           blockNumber,
@@ -85,6 +99,7 @@ async function processBlockRangeForNetwork(
 
         if (events.length > 0) {
           foundEvents = true;
+          record.eventsFound += events.length;
           events.forEach((event) => {
             addEventToRSS(
               event.address,
@@ -110,6 +125,11 @@ async function processBlockRangeForNetwork(
         });    
       } catch (error) {
         console.error(`Error processing ${config.networkName} block ${blockNumber}:`, error);
+        record.errors.push({
+          block: blockNumber,
+          timestamp: new Date().toISOString(),
+          error: error instanceof Error ? error.message : String(error)
+        });
         updateState(config.networkName, {
           lastProcessedBlock: blockNumber - 1,
           hasError: true,
@@ -123,6 +143,10 @@ async function processBlockRangeForNetwork(
       await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
     }
   }
+  
+  // Update processing history
+  await updateProcessingHistory(record);
+  
   return foundEvents;
 }
 
@@ -271,6 +295,61 @@ async function processLatestBlocks() {
       console.error('Failed to upload state file after error:', uploadError);
     }
     process.exit(1);
+  }
+}
+
+async function updateProcessingHistory(newRecord: ProcessingRecord) {
+  const tempPath = path.join(__dirname, '../data/processing-history.json');
+  const dir = path.dirname(tempPath);
+  
+  try {
+    // Create data directory if it doesn't exist
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    // Load existing history
+    let history: ProcessingHistory;
+    try {
+      await downloadFromGCS(GCS_BUCKET_NAME, GCS_HISTORY_FILE_PATH, tempPath);
+      history = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
+    } catch (error) {
+      console.log('No existing history found, starting fresh');
+      history = { records: [] };
+    }
+
+    // Add new record
+    history.records.push(newRecord);
+
+    // Archive if needed (e.g., more than 1000 records)
+    if (history.records.length > 1000) {
+      const archivePath = `state/archive/processing-history-${Date.now()}.json`;
+      const recordsToArchive = history.records.slice(0, -100); // Keep last 100 records
+      
+      // Upload archive
+      await uploadToGCS(
+        GCS_BUCKET_NAME,
+        tempPath,
+        archivePath,
+        JSON.stringify(recordsToArchive)
+      );
+
+      // Update history
+      history.records = history.records.slice(-100);
+      history.archivedRecords = [
+        ...(history.archivedRecords || []),
+        { path: archivePath, count: recordsToArchive.length }
+      ];
+    }
+
+    // Save updated history
+    fs.writeFileSync(tempPath, JSON.stringify(history, null, 2));
+    await uploadToGCS(GCS_BUCKET_NAME, tempPath, GCS_HISTORY_FILE_PATH);
+
+    // Cleanup
+    fs.unlinkSync(tempPath);
+  } catch (error) {
+    console.error('Failed to update processing history:', error);
   }
 }
 

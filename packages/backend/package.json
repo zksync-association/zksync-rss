@@ -8,6 +8,7 @@
     "lint": "eslint . --ext .ts",
     "type-check": "tsc --noEmit",
     "process-blocks": "tsx ./entry/processBlockRange.ts",
+    "process-specific-blocks": "tsx ./entry/processSpecificBlocks.ts",
     "process-historic-blocks": "tsx ./entry/processHistoricBlocks.ts",
     "build": "tsc"
   },

@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-
 // GKE workloads compatible
 const storage = new Storage(); 
 
