@@ -43,8 +43,10 @@ export interface ProcessingRecord {
 
 export interface ProcessingHistory {
   records: ProcessingRecord[];
+  lastArchiveTimestamp?: string | null;
   archivedRecords?: {
     path: string;
     count: number;
+    timestamp: string;
   }[];
-} 
+}

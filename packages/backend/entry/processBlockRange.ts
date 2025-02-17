@@ -30,6 +30,9 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const STATE_FILE_PATH = path.join(__dirname, '../data/processing-state.json');
 const BATCH_SIZE = 10;
 const BATCH_DELAY = 1000;
+const LOCK_FILE_PATH = path.join(__dirname, '../data/processing-history.lock');
+const ARCHIVE_THRESHOLD = 1000;
+const MIN_TIME_BETWEEN_ARCHIVES = 10 * 60 * 1000; // 10 minutes
 
 async function downloadStateFile() {
   try {
@@ -53,17 +56,44 @@ async function uploadStateFile() {
       console.error('State file does not exist for upload');
       return;
     }
-    
+
     const content = fs.readFileSync(STATE_FILE_PATH, 'utf-8');
     await uploadToGCS(GCS_BUCKET_NAME, STATE_FILE_PATH, GCS_STATE_FILE_PATH, content);
     console.log('State file uploaded successfully');
-    
+
     // Clean up local state file after successful upload
     fs.unlinkSync(STATE_FILE_PATH);
     console.log('Local state file cleaned up');
   } catch (error) {
     console.error('Failed to upload state file to GCS:', error);
   }
+}
+
+async function acquireLock(timeout = 5000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    function tryLock() {
+      fs.writeFile(LOCK_FILE_PATH, process.pid.toString(), { flag: 'wx' }, (err) => {
+        if (!err) {
+          return resolve();
+        }
+        if (Date.now() - start > timeout) {
+          return reject(new Error('Could not acquire lock'));
+        }
+        setTimeout(tryLock, 100);
+      });
+    }
+    tryLock();
+  });
+}
+
+async function releaseLock(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.unlink(LOCK_FILE_PATH, (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
 }
 
 async function processBlockRangeForNetwork(
@@ -73,7 +103,7 @@ async function processBlockRangeForNetwork(
   batchSize: number = BATCH_SIZE
 ) {
   console.log(`Processing ${config.networkName} blocks ${startBlock} to ${endBlock}`);
-  
+
   // Initialize processing record
   const record: ProcessingRecord = {
     network: config.networkName,
@@ -122,7 +152,7 @@ async function processBlockRangeForNetwork(
           lastProcessedBlock: blockNumber,
           hasError: false,
           lastError: undefined
-        });    
+        });
       } catch (error) {
         console.error(`Error processing ${config.networkName} block ${blockNumber}:`, error);
         record.errors.push({
@@ -143,10 +173,10 @@ async function processBlockRangeForNetwork(
       await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
     }
   }
-  
+
   // Update processing history
   await updateProcessingHistory(record);
-  
+
   return foundEvents;
 }
 
@@ -207,7 +237,7 @@ async function processLatestBlocks() {
         lastUpdated: new Date().toISOString()
       }
     };
-    
+
     // Load existing state if available
     if (fs.existsSync(STATE_FILE_PATH)) {
       try {
@@ -301,9 +331,12 @@ async function processLatestBlocks() {
 async function updateProcessingHistory(newRecord: ProcessingRecord) {
   const tempPath = path.join(__dirname, '../data/processing-history.json');
   const dir = path.dirname(tempPath);
-  
+
   try {
-    // Create data directory if it doesn't exist
+    // Acquire lock to prevent concurrent updates
+    await acquireLock();
+    console.log('Acquired lock for processing history update');
+
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -313,19 +346,27 @@ async function updateProcessingHistory(newRecord: ProcessingRecord) {
     try {
       await downloadFromGCS(GCS_BUCKET_NAME, GCS_HISTORY_FILE_PATH, tempPath);
       history = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
+      console.log(`Loaded history with ${history.records.length} records`);
     } catch (error) {
       console.log('No existing history found, starting fresh');
-      history = { records: [] };
+      history = { records: [], lastArchiveTimestamp: null };
     }
 
-    // Add new record
+    // Add the new record
     history.records.push(newRecord);
+    console.log(`Added new record, total records: ${history.records.length}`);
 
-    // Archive if needed (e.g., more than 1000 records)
-    if (history.records.length > 1000) {
+    // Check if we need to archive
+    const now = Date.now();
+    const lastArchiveTime = history.lastArchiveTimestamp ? new Date(history.lastArchiveTimestamp).getTime() : 0;
+    const shouldArchive = history.records.length >= ARCHIVE_THRESHOLD &&
+                         (!history.lastArchiveTimestamp || (now - lastArchiveTime) >= MIN_TIME_BETWEEN_ARCHIVES);
+
+    if (shouldArchive) {
+      console.log('Archiving records...');
       const archivePath = `state/archive/processing-history-${Date.now()}.json`;
-      const recordsToArchive = history.records.slice(0, -100); // Keep last 100 records
-      
+      const recordsToArchive = history.records.slice(0, history.records.length - 100);
+
       // Upload archive
       await uploadToGCS(
         GCS_BUCKET_NAME,
@@ -336,20 +377,37 @@ async function updateProcessingHistory(newRecord: ProcessingRecord) {
 
       // Update history
       history.records = history.records.slice(-100);
+      history.lastArchiveTimestamp = new Date().toISOString();
       history.archivedRecords = [
         ...(history.archivedRecords || []),
-        { path: archivePath, count: recordsToArchive.length }
+        { path: archivePath, count: recordsToArchive.length, timestamp: new Date().toISOString() }
       ];
+      console.log(`Archived ${recordsToArchive.length} records, keeping ${history.records.length} records`);
     }
 
     // Save updated history
     fs.writeFileSync(tempPath, JSON.stringify(history, null, 2));
     await uploadToGCS(GCS_BUCKET_NAME, tempPath, GCS_HISTORY_FILE_PATH);
+    console.log('Uploaded updated history to GCS');
 
-    // Cleanup
+    // Cleanup temporary file
     fs.unlinkSync(tempPath);
+
+    // Release the lock
+    await releaseLock();
+    console.log('Released lock');
   } catch (error) {
     console.error('Failed to update processing history:', error);
+    // Attempt to release the lock if it's still held
+    try {
+      if (fs.existsSync(LOCK_FILE_PATH)) {
+        await releaseLock();
+        console.log('Released lock after error');
+      }
+    } catch (releaseError) {
+      console.error('Failed to release lock:', releaseError);
+    }
+    throw error; // Re-throw the error to be handled by the caller
   }
 }
 
