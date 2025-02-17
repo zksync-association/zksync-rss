@@ -5,8 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-// GKE workloads compatible
-const storage = new Storage(); 
+const storage = new Storage();
 
 export const uploadToGCS = async (
   bucketName: string,
@@ -16,7 +15,7 @@ export const uploadToGCS = async (
 ): Promise<void> => {
   try {
     const bucket = storage.bucket(bucketName);
-    
+
     // If content is provided and file doesn't exist, create it
     if (content && !fs.existsSync(filePath)) {
       const dir = path.dirname(filePath);
