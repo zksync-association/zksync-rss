@@ -1,36 +1,41 @@
 import { ethers } from "ethers";
-import { UnifiedMinimalABI, EventsMapping, ParsedEvent, getCategory, getGovBodyFromAddress } from "~/shared";
+import { UnifiedMinimalABI, ParsedEvent, getCategory, getGovBodyFromAddress } from "~/shared";
 
 export const monitorEventsAtBlock = async (
   blocknumber: number,
   provider: ethers.Provider,
-  contractsConfig: { [address: string]: string[] }
+  contractsConfig: { [address: string]: string[] },
+  networkName: string, // Added networkName
+  chainId: number      // Added chainId
 ): Promise<ParsedEvent[]> => {
-  console.time(`monitor-${blocknumber}`);
   try {
-    // First, verify block exists
     const block = await provider.getBlock(blocknumber);
     if (!block) {
-      throw new Error(`🚨 CRITICAL: Block ${blocknumber} not found!`);
+      throw new Error(`Block ${blocknumber} not found`);
     }
     if (!block.timestamp) {
-      throw new Error(`🚨 CRITICAL: Block ${blocknumber} has no timestamp!`);
+      throw new Error(`Block ${blocknumber} has no timestamp`);
     }
-    const blockTimestamp = new Date(block.timestamp * 1000);
-    console.log(`📅 Processing block ${blocknumber} from ${blockTimestamp.toISOString()}`);
+
+    // Validate timestamp
+    const timestamp = Number(block.timestamp);
+    const now = Math.floor(Date.now() / 1000);
+    const isFutureTimestamp = timestamp > now;
+
+    if (isFutureTimestamp) {
+      console.warn(`Block ${blocknumber} has a future timestamp: ${timestamp} (${new Date(timestamp * 1000).toISOString()}). Using current time instead.`);
+    }
 
     const allEventPromises = Object.entries(contractsConfig).flatMap(([address, events]) => {
-      console.log(`🔍 Checking contract ${address} for events: ${events.join(', ')}`);
       const contract = new ethers.Contract(address, UnifiedMinimalABI, provider);
-      
+
       const eventLogsPromises = events.map(eventName =>
         contract.queryFilter(eventName, blocknumber, blocknumber)
           .then(eventLogs => {
-            console.log(`✅ Found ${eventLogs.length} ${eventName} events for ${address}`);
             return eventLogs.map(log => {
               const eventFragment = contract.interface.getEvent(eventName);
               if (!eventFragment) {
-                throw new Error(`🚨 Failed to get event fragment for ${eventName} on ${address}`);
+                throw new Error(`Failed to get event fragment for ${eventName} on ${address}`);
               }
 
               try {
@@ -52,52 +57,46 @@ export const monitorEventsAtBlock = async (
                   address: log.address,
                   topics: log.topics,
                   interface: eventFragment,
-                  args: args,
+                  args,
                   rawData: log.data,
                   decodedData
                 };
               } catch (decodeError) {
-                throw new Error(`🚨 Failed to decode event ${eventName} on ${address}: ${(decodeError as unknown as Error).message}`);
+                throw new Error(`Failed to decode event ${eventName} on ${address}: ${(decodeError as unknown as Error).message}`);
               }
             });
           })
           .catch((err) => {
-            const errorMessage = `
-                🚨 CRITICAL ERROR PROCESSING EVENT 🚨
-                Block: ${blocknumber}
-                Contract: ${address}
-                Event: ${eventName}
-                Error: ${err.message}
-                ${err.stack}
-            `;
-            console.error(errorMessage);
+            const errorMessage = `Error processing event at block ${blocknumber}, contract ${address}, event ${eventName}: ${err.message}`;
             throw new Error(errorMessage);
           })
       );
       return eventLogsPromises;
     });
 
-    const results = await Promise.all(allEventPromises); // Changed from allSettled to all
-    
-    // Process results directly into organized events
+    const results = await Promise.all(allEventPromises);
+
     const organizedEvents = results.flatMap((result) => {
       if (!result) {
-        throw new Error(`🚨 Received null result when processing events at block ${blocknumber}`);
+        throw new Error(`Received null result when processing events at block ${blocknumber}`);
       }
-      
+
       return result.filter(e => e != undefined).map(event => {
         if (!event?.interface) {
-          throw new Error(`🚨 Invalid event data at block ${blocknumber}`);
+          throw new Error(`Invalid event data at block ${blocknumber}`);
         }
-        const ETHEREUM_ADDRESSES = [
-          '0x8f7a9912416e8adc4d9c21fae1415d3318a11897'  // Protocol Upgrade Handler
-        ];
-        const isEthereum = ETHEREUM_ADDRESSES.includes(event.address.toLowerCase());
-        const link = isEthereum ? 
-          `https://etherscan.io/tx/${event.txhash}` :
-          `https://explorer.zksync.io/tx/${event.txhash}`;
-          const networkName = isEthereum ? 'Ethereum Mainnet' : 'ZKSync Era';        
-          const chainId = isEthereum ? '1' : '324';
+
+        // Determine block explorer link based on networkName
+        const blockExplorerBaseUrl = networkName === 'Ethereum Mainnet' ? 'https://etherscan.io' : 'https://explorer.zksync.io';
+        const link = `${blockExplorerBaseUrl}/tx/${event.txhash}`;
+
+        // Use current time if block timestamp is in the future
+        const eventTimestamp = isFutureTimestamp ? now : timestamp;
+
+        // Construct proposal link using the provided chainId
+        const proposalLink = event.args.proposalId ?
+          `https://vote.zknation.io/dao/proposal/${event.args.proposalId}?govId=eip155:${chainId}:${event.address}` : '';
+
         return {
           interface: event.interface,
           rawData: event.rawData,
@@ -110,34 +109,17 @@ export const monitorEventsAtBlock = async (
           address: event.address,
           args: event.args,
           topics: [getCategory(event.address)],
-          timestamp: blockTimestamp.toISOString(),
-          proposalLink: event.args.proposalId ? 
-            `https://vote.zknation.io/dao/proposal/${event.args.proposalId}?govId=eip155:${
-              event.address.toLowerCase() in EventsMapping["Ethereum Mainnet"] ? '1' : '324'
-            }:${event.address}` : '',
-          networkName,
-          chainId,
+          timestamp: String(eventTimestamp),
+          proposalLink,
+          networkName, // Use passed-in networkName
+          chainId: String(chainId), // Use passed-in chainId, converting to string
         };
       });
     });
 
-    if (!organizedEvents.length) {
-      console.log(`ℹ️ No events found at block ${blocknumber}`);
-    } else {
-      console.log(`✅ Successfully processed ${organizedEvents.length} events at block ${blocknumber}`);
-    }
-
     return organizedEvents;
   } catch (err: unknown) {
-    const errorMessage = `
-      🚨 FATAL ERROR PROCESSING BLOCK 🚨
-      Block: ${blocknumber}
-      Error: ${(err as Error).message}
-      ${(err as Error).stack}
-    `;
-    console.error(errorMessage);
-    throw new Error(errorMessage); // Re-throw to halt execution
-  } finally {
-    console.timeEnd(`monitor-${blocknumber}`);
+    const errorMessage = `Error processing block ${blocknumber}: ${(err as Error).message}`;
+    throw new Error(errorMessage);
   }
 };

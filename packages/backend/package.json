@@ -10,7 +10,14 @@
     "process-blocks": "tsx ./entry/processBlockRange.ts",
     "process-specific-blocks": "tsx ./entry/processSpecificBlocks.ts",
     "process-historic-blocks": "tsx ./entry/processHistoricBlocks.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "test:blocks": "npx tsx tests/processBlockRangeTest.ts",
+    "test:blocks:eth": "npx tsx tests/processBlockRangeTest.ts ethereum",
+    "test:blocks:zk": "npx tsx tests/processBlockRangeTest.ts zksync",
+    "test:blocks:local": "npx tsx tests/processBlockRangeTest.ts zksync --local",
+    "test:blocks:gcp": "npx tsx tests/processBlockRangeGcpTest.ts",
+    "test:blocks:gcp:eth": "npx tsx tests/processBlockRangeGcpTest.ts ethereum",
+    "test:blocks:gcp:zk": "npx tsx tests/processBlockRangeGcpTest.ts zksync"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

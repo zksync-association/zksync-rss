@@ -13,6 +13,12 @@ export const getGovBodyFromAddress = (address: string): string => {
     "0xBDFfCC71FE84020238F2990a6D2954e87355De0D": "Security Council",            // Security Council
     "0xbC1653bd3829dfEc575AfC3816D4899cd103B51c": "Foundation",                  // Foundation
     "0x5d89444f84d544deBbD13D672f314A4DfaE3f77C": "zkMessage",                   // Changelog zkMessage
+    "0x085b8B6407f150D62adB1EF926F7f304600ec714": "ZkProtocolGovernor Timelock v2.0", // ZkProtocolGovernor Timelock
+    "0xb83FF6501214ddF40C91C9565d095400f3F45746": "ZkTokenGovernor v2.0",                // ZkTokenGovernor
+    "0xe5d21A9179CA2E1F0F327d598D464CcF60d89c3d": "ZkTokenGovernor Timelock v2.0",       // ZkTokenGovernor Timelock
+    "0xEEEa739a8b6fB1b8f703E23C9Be03CeeA643b160": "ZkGovOpsGovernor v2.0",               // ZkGovOpsGovernor
+    "0xC9E442574958f96C026DeF9a50C3236cab17428a": "ZkGovOpsGovernor Timelock v2.0",      // ZkGovOpsGovernor Timelock
+    "0xE30Dca3047B37dc7d88849dE4A4Dc07937ad5Ab3": "Protocol Upgrade Handler v2.0",        // Protocol Upgrade Handler
   };
 
   return addressMapping[address] || "Unknown Governance Body";
@@ -22,11 +28,11 @@ export const convertBigIntToString = (obj: unknown): Record<string, unknown> => 
   if (typeof obj === 'bigint') {
     return { value: obj.toString() };
   }
-  
+
   if (Array.isArray(obj)) {
     return { value: obj.map(convertBigIntToString) };
   }
-  
+
   if (typeof obj === 'object' && obj !== null) {
     const newObj: Record<string, unknown> = {};
     for (const key in obj as Record<string, unknown>) {
@@ -34,7 +40,7 @@ export const convertBigIntToString = (obj: unknown): Record<string, unknown> => 
     }
     return newObj;
   }
-  
+
   return { value: obj };
 }
 

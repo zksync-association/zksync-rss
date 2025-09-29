@@ -31,7 +31,9 @@ async function processAddressBlocks(addressBlocks: BlockAddress[], config: Netwo
         const events = await monitorEventsAtBlock(
           blockNumber,
           config.provider,
-          addressConfig
+          addressConfig,
+          config.networkName,
+          config.chainId,
         );
 
         if (events.length > 0) {
