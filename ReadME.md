@@ -120,11 +120,24 @@ docker run zksync-rss-backend
 - `npm run process-blocks` - Process latest blocks
 - `npm run process-historic-blocks` - Process predefined historical blocks
 - `npm run process-specific-blocks` - Process specific blocks for error recovery
+- `npm run catchup-block-range --workspace=@zksync-rss/backend -- <network> <fromBlock> <toBlock>` - Backfill a range while updating processing state and history
 - `npm run frontend` - Start frontend development server
 - `npm run lint` - Run linter check
 - `npm run type-check` - Run TypeScript type checking
 - `npm run build` - Build both frontend and backend
 - `npm run clean` - Clean all dependencies and build artifacts
+
+## CI Gate (run locally before pushing)
+
+The GitHub workflow runs the following commands and they must pass locally without warnings:
+
+```bash
+npm run lint
+npm run type-check
+npm run build
+```
+
+`npm run lint` now enforces zero warnings (non-null assertions, unused parameters, and stray `any`s have all been eliminated), so treat any new warning as a failure to be fixed before opening a PR.
 
 ## Docker Commands
 
