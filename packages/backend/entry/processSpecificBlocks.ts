@@ -1,77 +1,84 @@
 import path from 'path';
-import { addEventToRSS, updateRSSFeed } from "../rss/utils";
-import { ethereumConfig, zkSyncConfig } from "../shared/constants";
+import { addEventToRSS, updateRSSFeed } from "~/rss/utils";
+import {
+  convertBigIntToString,
+  monitorEventsAtBlock,
+  ethereumConfig,
+  zkSyncConfig,
+  NetworkConfig,
+} from "~/shared";
 import dotenv from 'dotenv';
-import { convertBigIntToString } from "../shared/utils";
-import { monitorEventsAtBlock } from "../shared/getEventsAtBlock";
 
 // Configuration
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 async function processSpecificBlocks(networkName: string, blockNumbers: number[]) {
-  console.log(`Starting to process blocks for network ${networkName}: ${blockNumbers.join(', ')}`);
-
-  const config = networkName === 'ethereum' ? ethereumConfig : zkSyncConfig;
-  const provider = config.provider;
-  console.log('Provider initialized');
-
-  let foundEvents = false;
-
-  // Process each block
-  for (const blockNumber of blockNumbers) {
-    console.log(`Processing block ${blockNumber}`);
-
-    const block = await provider.getBlock(blockNumber);
-    if (!block) {
-      console.log(`Block ${blockNumber} not found`);
-      continue;
-    }
-    console.log(`Block timestamp: ${block.timestamp}`);
-
-    const events = await monitorEventsAtBlock(
-      blockNumber,
-      provider,
-      config.eventsMapping,
-      config.networkName,
-      config.chainId
-    );
-    console.log(`Found ${events.length} events in block ${blockNumber}`);
-
-    if (events.length > 0) {
-      foundEvents = true;
-      console.log(`Found ${events.length} events:`);
-      for (const event of events) {
-        console.log(`Processing event: ${event.eventName} at ${event.address}`);
-        await addEventToRSS(
-          event.address,
-          event.eventName,
-          event.topics,
-          event.title,
-          event.link,
-          event.networkName,
-          Number(event.chainId),
-          blockNumber,
-          config.governanceName,
-          event.proposalLink || null,
-          event.timestamp,
-          convertBigIntToString(event.args)
-        );
-        console.log(`Event ${event.eventName} added to RSS feed`);
-      }
+  try {
+    console.log(`Processing specific blocks for ${networkName}: ${blockNumbers.join(', ')}`);
+    
+    // Get network configuration
+    let config: NetworkConfig;
+    if (networkName.toLowerCase() === 'ethereum') {
+      config = ethereumConfig;
+    } else if (networkName.toLowerCase() === 'zksync') {
+      config = zkSyncConfig;
     } else {
-      console.log('No events found');
+      throw new Error(`Unsupported network: ${networkName}`);
     }
-  }
 
-  // Update RSS feed if any events were found
-  if (foundEvents) {
-    const updated = await updateRSSFeed();
-    console.log(updated ? 'RSS feed updated' : 'RSS feed unchanged');
-  }
+    let foundEvents = false;
 
-  console.log('All blocks processed, updating RSS feed');
-  await updateRSSFeed();
-  console.log('RSS feed updated successfully');
+    // Process each block
+    for (const blockNumber of blockNumbers) {
+      console.log(`Processing block ${blockNumber} on ${networkName}`);
+      
+      try {
+        const events = await monitorEventsAtBlock(
+          blockNumber,
+          config.provider,
+          config.eventsMapping
+        );
+
+        if (events.length > 0) {
+          foundEvents = true;
+          events.forEach((event) => {
+            addEventToRSS(
+              event.address,
+              event.eventName,
+              event.topics,
+              event.title,
+              event.link,
+              config.networkName,
+              config.chainId,
+              event.blocknumber,
+              config.governanceName,
+              event.proposalLink,
+              event.timestamp,
+              convertBigIntToString(event.args)
+            );
+          });
+          console.log(`Found ${events.length} events at block ${blockNumber}`);
+        } else {
+          console.log(`No events found at block ${blockNumber}`);
+        }
+      } catch (error) {
+        console.error(`Error processing block ${blockNumber}:`, error);
+        // Continue processing other blocks even if one fails
+      }
+    }
+
+    // Update RSS feed if any events were found
+    if (foundEvents) {
+      const updated = await updateRSSFeed();
+      console.log(updated ? 'RSS feed updated' : 'RSS feed unchanged');
+    }
+
+    console.log('Successfully processed all specified blocks');
+
+  } catch (error) {
+    console.error('Failed to process blocks:', error);
+    process.exit(1);
+  }
 }
 
 // Error handlers
@@ -99,4 +106,4 @@ if (require.main === module) {
   processSpecificBlocks(network, blocks);
 }
 
-export { processSpecificBlocks };
+export { processSpecificBlocks }; 
