@@ -24,8 +24,6 @@ export interface ParsedEvent {
   decodedData: Record<string, unknown>;
   link: string;
   proposalLink: string;
-  networkName: string;
-  chainId: string;
 }
 
 export interface ProcessingError {
